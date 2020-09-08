@@ -19,6 +19,7 @@ class TestRunner
     vim.cmd("b #{bufferHandle}")
     -- Always throw exceptions during testing
     vimp.mapErrorHandlingStrategy = vimp.mapErrorHandlingStrategies.none
+    log.minLogLevel = log.levels.debug
 
     action = ->
       func!

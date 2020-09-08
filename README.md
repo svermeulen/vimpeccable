@@ -9,6 +9,7 @@ Features
 * Better lua stack traces
 * Better error handling for lua maps
 * Add maps to non-active buffers
+* Ability to create lua based user commands
 
 Usage
 
@@ -21,3 +22,5 @@ Things to Document
 Notes
 
 * Uses <unique> by default
+* map command does not support completion yet
+

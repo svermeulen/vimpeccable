@@ -1,4 +1,6 @@
 
+assert = require("vimp.util.assert")
+
 class Helpers
   -- recursive input
   rinput: (keys) ->
@@ -23,4 +25,19 @@ class Helpers
     -- similar to unlet
     if vim.g[name] != nil
       vim.g[name] = nil
+
+  hasSameContents: (list1, list2) ->
+    if #list1 != #list2
+      return false
+
+    map1 = {x,true for x in *list1}
+
+    for item in *list2
+      if map1[item] == nil
+        return false
+
+    return true
+
+  assertSameContents: (list1, list2) ->
+    assert.that(Helpers.hasSameContents(list1, list2), "Expected '#{vim.inspect(list1)}' to equal '#{vim.inspect(list2)}'")
 

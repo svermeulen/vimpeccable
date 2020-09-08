@@ -5,6 +5,7 @@ tableUtil = require("vimp.util.table")
 stringUtil = require("vimp.util.string")
 util = require("vimp.util.util")
 MapInfo = require("vimp.map_info")
+CommandMapInfo = require("vimp.command_map_info")
 createVimpErrorWrapper = require("vimp.error_wrapper")
 UniqueTrie = require("vimp.unique_trie")
 
@@ -31,6 +32,7 @@ MapErrorStrategies =
 class Vimp
   new: =>
     @_mapsById = {}
+    @_commandMapsById = {}
     @_uniqueMapIdCount = 1
     @_globalMapsByModeAndLhs = {}
     @_globalTrieByMode = {}
@@ -127,31 +129,46 @@ class Vimp
 
     return optionsMap, extraOptionsMap, lhs, rhs
 
-  _executeMap: (mapId) =>
-    mapping = @_mapsById[mapId]
+  _executeCommandMap: (mapId, userArgs) =>
+    map = @_commandMapsById[mapId]
 
-    assert.that(mapping != nil)
+    assert.that(map != nil)
 
-    if not mapping.options.expr
-      if mapping.mode == 'x'
-        util.normalBang('gv')
-      elseif mapping.mode == 's'
-        util.normalBang('gv<c-g>')
-
-    assert.that(type(mapping.rhs) == 'function')
+    action = ->
+      map.handler(unpack(userArgs))
 
     -- Call user function and get the full stack trace if error occurs
-    success, result = xpcall(mapping.rhs, debug.traceback)
+    success, result = xpcall(action, debug.traceback)
 
     if not success
       -- Always rethrow on errors
-      error("Error when executing map '#{mapping.lhs}': #{result}\n")
+      error("Error when executing command '#{map.name}': #{result}\n")
 
-    if mapping.extraOptions.repeatable
-      assert.that(not mapping.options.expr)
-      vim.call('repeat#set', util.replaceSpecialChars(mapping.lhs))
+  _executeMap: (mapId) =>
+    map = @_mapsById[mapId]
 
-    if mapping.options.expr
+    assert.that(map != nil)
+
+    if not map.options.expr
+      if map.mode == 'x'
+        util.normalBang('gv')
+      elseif map.mode == 's'
+        util.normalBang('gv<c-g>')
+
+    assert.that(type(map.rhs) == 'function')
+
+    -- Call user function and get the full stack trace if error occurs
+    success, result = xpcall(map.rhs, debug.traceback)
+
+    if not success
+      -- Always rethrow on errors
+      error("Error when executing map '#{map.lhs}': #{result}\n")
+
+    if map.extraOptions.repeatable
+      assert.that(not map.options.expr)
+      vim.call('repeat#set', util.replaceSpecialChars(map.lhs))
+
+    if map.options.expr
       -- This appears to be necessary even though I would expect
       -- vim to handle this for us
       return util.replaceSpecialChars(result)
@@ -268,66 +285,66 @@ class Vimp
     return MapInfo(
       id, mode, options, extraOptions, lhs, rhs, bufferHandle)
 
-  _addNonRecursiveMap: (mode, arg1, arg2, arg3) =>
-    options, extraOptions, lhs, rhs = @\_convertArgs(arg1, arg2, arg3)
+  _addNonRecursiveMap: (mode, ...) =>
+    options, extraOptions, lhs, rhs = @\_convertArgs(...)
     assert.that(options.noremap == nil)
     options.noremap = true
     map = @\_createMapInfo(mode, lhs, rhs, options, extraOptions)
     @\_addMapping(map)
 
-  tnoremap: (arg1, arg2, arg3) =>
-    @\_addNonRecursiveMap('t', arg1, arg2, arg3)
+  tnoremap: (...) =>
+    @\_addNonRecursiveMap('t', ...)
 
-  cnoremap: (arg1, arg2, arg3) =>
-    @\_addNonRecursiveMap('c', arg1, arg2, arg3)
+  cnoremap: (...) =>
+    @\_addNonRecursiveMap('c', ...)
 
-  snoremap: (arg1, arg2, arg3) =>
-    @\_addNonRecursiveMap('s', arg1, arg2, arg3)
+  snoremap: (...) =>
+    @\_addNonRecursiveMap('s', ...)
 
-  onoremap: (arg1, arg2, arg3) =>
-    @\_addNonRecursiveMap('o', arg1, arg2, arg3)
+  onoremap: (...) =>
+    @\_addNonRecursiveMap('o', ...)
 
-  vnoremap: (arg1, arg2, arg3) =>
-    @\_addNonRecursiveMap('v', arg1, arg2, arg3)
+  vnoremap: (...) =>
+    @\_addNonRecursiveMap('v', ...)
 
-  xnoremap: (arg1, arg2, arg3) =>
-    @\_addNonRecursiveMap('x', arg1, arg2, arg3)
+  xnoremap: (...) =>
+    @\_addNonRecursiveMap('x', ...)
 
-  inoremap: (arg1, arg2, arg3) =>
-    @\_addNonRecursiveMap('i', arg1, arg2, arg3)
+  inoremap: (...) =>
+    @\_addNonRecursiveMap('i', ...)
 
-  nnoremap: (arg1, arg2, arg3) =>
-    @\_addNonRecursiveMap('n', arg1, arg2, arg3)
+  nnoremap: (...) =>
+    @\_addNonRecursiveMap('n', ...)
 
-  _addRecursiveMap: (mode, arg1, arg2, arg3) =>
-    options, extraOptions, lhs, rhs = @\_convertArgs(arg1, arg2, arg3)
+  _addRecursiveMap: (mode, ...) =>
+    options, extraOptions, lhs, rhs = @\_convertArgs(...)
     assert.that(options.noremap == nil)
     map = @\_createMapInfo(mode, lhs, rhs, options, extraOptions)
     @\_addMapping(map)
 
-  tmap: (arg1, arg2, arg3) =>
-    @\_addRecursiveMap('t', arg1, arg2, arg3)
+  tmap: (...) =>
+    @\_addRecursiveMap('t', ...)
 
-  cmap: (arg1, arg2, arg3) =>
-    @\_addRecursiveMap('c', arg1, arg2, arg3)
+  cmap: (...) =>
+    @\_addRecursiveMap('c', ...)
 
-  smap: (arg1, arg2, arg3) =>
-    @\_addRecursiveMap('s', arg1, arg2, arg3)
+  smap: (...) =>
+    @\_addRecursiveMap('s', ...)
 
-  omap: (arg1, arg2, arg3) =>
-    @\_addRecursiveMap('o', arg1, arg2, arg3)
+  omap: (...) =>
+    @\_addRecursiveMap('o', ...)
 
-  vmap: (arg1, arg2, arg3) =>
-    @\_addRecursiveMap('v', arg1, arg2, arg3)
+  vmap: (...) =>
+    @\_addRecursiveMap('v', ...)
 
-  xmap: (arg1, arg2, arg3) =>
-    @\_addRecursiveMap('x', arg1, arg2, arg3)
+  xmap: (...) =>
+    @\_addRecursiveMap('x', ...)
 
-  imap: (arg1, arg2, arg3) =>
-    @\_addRecursiveMap('i', arg1, arg2, arg3)
+  imap: (...) =>
+    @\_addRecursiveMap('i', ...)
 
-  nmap: (arg1, arg2, arg3) =>
-    @\_addRecursiveMap('n', arg1, arg2, arg3)
+  nmap: (...) =>
+    @\_addRecursiveMap('n', ...)
 
   unmapAll: =>
     log.debug("Unmapping all maps")
@@ -349,6 +366,11 @@ class Vimp
 
     tableUtil.clear(@_bufferInfos)
 
+    for _, map in pairs(@_commandMapsById)
+      map\removeFromVim!
+
+    tableUtil.clear(@_commandMapsById)
+
     -- Don't bother resetting _uniqueMapIdCount to be extra safe
     log.debug("Successfully unmapped #{count} maps")
 
@@ -362,6 +384,15 @@ class Vimp
 
     if not ok
       error(retVal, 2)
+
+  mapCommand: (name, handler) =>
+    assert.that(@_bufferBlockHandle == nil, "Buffer local commands are not currently supported")
+
+    id = @\_generateNewMappingId!
+    map = CommandMapInfo(id, handler, name)
+    assert.that(@_commandMapsById[map.id] == nil)
+    map\addToVim!
+    @_commandMapsById[map.id] = map
 
 export vimp, _vimp
 _vimp = Vimp()
