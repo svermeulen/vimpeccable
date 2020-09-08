@@ -109,15 +109,22 @@ class Vimp
     @_uniqueMapIdCount += 1
     return @_uniqueMapIdCount
 
-  _convertArgs: (arg1, arg2, arg3) =>
-    local optionsList, lhs, rhs
+  _convertArgs: (arg1, arg2, arg3, arg4) =>
+    local modes, optionsList, lhs, rhs
 
-    if arg3 != nil
-      optionsList = arg1
+    if arg4 != nil
+      modes = arg1
+      optionsList = arg2
+      lhs = arg3
+      rhs = arg4
+    else if arg3 != nil
+      optionsList = {}
+      modes = arg1
       lhs = arg2
       rhs = arg3
     else
       optionsList = {}
+      modes = 'n'
       lhs = arg1
       rhs = arg2
 
@@ -137,7 +144,7 @@ class Vimp
     optionsMap = {x,true for x in *optionsList when not ExtraOptions[x]}
     extraOptionsMap = {x,true for x in *optionsList when ExtraOptions[x]}
 
-    return optionsMap, extraOptionsMap, lhsList, rhs
+    return modes, optionsMap, extraOptionsMap, lhsList, rhs
 
   _executeCommandMap: (mapId, userArgs) =>
     map = @_commandMapsById[mapId]
@@ -306,8 +313,8 @@ class Vimp
     return MapInfo(
       id, mode, options, extraOptions, actualLhs, lhs, rhs, bufferHandle)
 
-  bind: (modes, ...) =>
-    options, extraOptions, lhsList, rhs = @\_convertArgs(...)
+  bind: (...) =>
+    modes, options, extraOptions, lhsList, rhs = @\_convertArgs(...)
     assert.that(options.noremap == nil)
     options.noremap = true
     assert.that(#lhsList > 0)
@@ -343,8 +350,8 @@ class Vimp
   nnoremap: (...) =>
     @\bind('n', ...)
 
-  rbind: (modes, ...) =>
-    options, extraOptions, lhsList, rhs = @\_convertArgs(...)
+  rbind: (...) =>
+    modes, options, extraOptions, lhsList, rhs = @\_convertArgs(...)
     assert.that(options.noremap == nil)
     assert.that(#lhsList > 0)
     assert.that(#modes > 0)
