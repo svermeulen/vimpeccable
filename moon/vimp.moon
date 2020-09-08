@@ -9,7 +9,7 @@ CommandMapInfo = require("vimp.command_map_info")
 createVimpErrorWrapper = require("vimp.error_wrapper")
 UniqueTrie = require("vimp.unique_trie")
 
-ExtraOptions = { repeatable:true, force:true, buffer:true }
+ExtraOptions = { repeatable:true, force:true, buffer:true, chord:true }
 
 Modes =
   normal: 'n',
@@ -219,8 +219,10 @@ class Vimp
 
     return nil
 
-  _addToTrieDryRun: (trie, mapInfo, mappingMap) =>
-    succeeded, existingPrefix, exactMatch = trie\tryAdd(mapInfo.lhs, true)
+  _addToTrieDryRun: (trie, map, mappingMap) =>
+    assert.that(not map.extraOptions.chord)
+
+    succeeded, existingPrefix, exactMatch = trie\tryAdd(map.lhs, true)
 
     if succeeded
       return true
@@ -230,7 +232,7 @@ class Vimp
 
     conflictMapInfos = {}
 
-    if #existingPrefix < #mapInfo.lhs
+    if #existingPrefix < #map.lhs
       -- In this case, the existingPrefix must match an actual map
       -- otherwise, the prefix would be a branch and therefore the
       -- add would have succeeded
@@ -238,15 +240,15 @@ class Vimp
       assert.that(currentInfo)
       table.insert(conflictMapInfos, currentInfo)
     else
-      assert.that(#existingPrefix == #mapInfo.lhs)
+      assert.that(#existingPrefix == #map.lhs)
 
-      trie\visitSuffixes mapInfo.lhs, (suffix) ->
-        currentInfo = mappingMap[mapInfo.lhs .. suffix]
+      trie\visitSuffixes map.lhs, (suffix) ->
+        currentInfo = mappingMap[map.lhs .. suffix]
         assert.that(currentInfo)
         table.insert(conflictMapInfos, currentInfo)
 
     conflictOutput = stringUtil.join("\n", ["    #{x\toString!}" for x in *conflictMapInfos])
-    error("Map conflict found when attempting to add map:\n    #{mapInfo\toString!}\nConflicts:\n#{conflictOutput}")
+    error("Map conflict found when attempting to add map:\n    #{map\toString!}\nConflicts:\n#{conflictOutput}")
 
   _newBufInfo: =>
     bufInfo = {mapsByModeAndLhs: {}, triesByMode: {}}
@@ -280,7 +282,20 @@ class Vimp
 
       @\_removeMapping(existingMap)
 
-    @\_addToTrieDryRun(trie, map, modeMaps)
+    -- Do not add mappings that have the chord option to the trie
+    -- This is important to avoid false positives for shadow detection
+    -- For example:
+    --   vimp.bind 'n', 'm', "d"
+    --   vimp.bind 'n', 'mm', "D"
+    -- This would normally be flagged as a duplicate even though
+    -- it works fine in practice, because 'm' would always be followed
+    -- by another key for the motion.  This can be avoided by changing to:
+    --   vimp.bind 'n', {'chord'}, 'm', "d"
+    --   vimp.bind 'n', 'mm', "D"
+    shouldAddToTrie = not map.extraOptions.chord
+
+    if shouldAddToTrie
+      @\_addToTrieDryRun(trie, map, modeMaps)
 
     map\addToVim!
     -- Now that addToVim has succeeded, we can store the mapping
@@ -290,8 +305,9 @@ class Vimp
     @_mapsById[map.id] = map
     modeMaps[map.lhs] = map
 
-    succeeded, existingPrefix, exactMatch = trie\tryAdd(map.lhs)
-    assert.that(succeeded)
+    if shouldAddToTrie
+      succeeded, existingPrefix, exactMatch = trie\tryAdd(map.lhs)
+      assert.that(succeeded)
 
   _getAliases: =>
     return @_aliases
