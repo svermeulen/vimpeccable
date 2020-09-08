@@ -1,21 +1,45 @@
 
 assert = require("vimp.util.assert")
 
+-- Note here that lua does not support unicode and that strings are
+-- ultimately just sequences of bytes
+-- For example, lua things that "ПРИВЕТ" has length 12
+-- This is why we can safely use the string.byte function below
+-- The nodes of the trie won't correspond to actual characters all the
+-- time but I think it will still work
 class UniqueTrie
   new: =>
     @root = {}
 
-  _remove: (node, index, data) =>
+  _tryRemove: (node, index, data) =>
     c = data\byte(index)
     child = node[c]
-    assert.that(child)
-    if index < #data
-      @\_remove(child, index + 1, data)
+
+    if child == nil
+      return false
+
+    if index == #data
+      -- Cannot remove because there's entries that have the given string as a prefix
+      if next(child) != nil
+        return false
+        
+      -- There is nothing after this so can remove
+      node[c] = nil
+      return true
+
+    success = @\_tryRemove(child, index + 1, data)
+
+    if not success
+      return false
+
+    -- Only remove the branch nodes if we don't have other leaves
     if next(child) == nil
       node[c] = nil
 
-  remove: (data) =>
-    @\_remove(@root, 1, data)
+    return success
+
+  tryRemove: (data) =>
+    return @\_tryRemove(@root, 1, data)
 
   _convertBytesToString: (bytes) =>
     result = ''
@@ -46,23 +70,19 @@ class UniqueTrie
 
     return currentNode
 
-  _visitBranches: (node, stack, callback) =>
-    for char, child in pairs(node)
-      table.insert(stack, char)
-      if next(child) != nil
-        callback(@\_convertBytesToString(stack))
-        @\_visitBranches(child, stack, callback)
-      table.remove(stack)
-
-  visitBranches: (prefix, callback) =>
-    node = @\_getSuffixNode(prefix)
-    if node != nil
-      @\_visitBranches(node, {}, callback)
-
   visitSuffixes: (prefix, callback) =>
     node = @\_getSuffixNode(prefix)
     if node != nil
       @\_visitSuffixes(node, {}, callback)
+
+  getAllEntries: =>
+    return @\getAllSuffixes('')
+
+  getAllSuffixes: (prefix) =>
+    suffixes = {}
+    @\visitSuffixes prefix, (suffix) ->
+      table.insert(suffixes, suffix)
+    return suffixes
 
   -- Adds the data to the trie
   -- Returns 0 on success, and otherwise returns the index
@@ -76,6 +96,8 @@ class UniqueTrie
       nextNode = currentNode[c]
 
       if nextNode and next(nextNode) == nil
+        -- In this case, we do not add to the trie
+        -- because this is a unique trie
         return false, data\sub(1, i), i == #data
 
       if not nextNode
@@ -86,6 +108,8 @@ class UniqueTrie
       currentNode = nextNode
 
     if not isNew
+      -- In this case, we are attempting to add a string
+      -- that is a prefix of an existing entry, so do not add
       return false, data, false
 
     return true, nil, false

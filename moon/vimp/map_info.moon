@@ -42,6 +42,13 @@ class MapInfo
 
     return ":<c-u>lua _vimp:_executeMap(#{@id})<cr>"
 
+  getRhsDisplayText: =>
+    if type(@rhs) == 'string'
+      return @rhs
+
+    assert.that(type(@rhs) == 'function')
+    return "<lua function #{@id}>"
+
   addToVim: =>
     actualRhs = @\_getActualRhs!
     if @bufferHandle != nil
@@ -54,4 +61,7 @@ class MapInfo
       vim.api.nvim_buf_del_keymap(@bufferHandle, @mode, @lhs)
     else
       vim.api.nvim_del_keymap(@mode, @lhs)
+
+  toString: =>
+    return "'#{@lhs}' -> '#{@\getRhsDisplayText!}'"
 

@@ -6,6 +6,7 @@ tableUtil = require("vimp.util.table")
 util = require("vimp.util.util")
 MapInfo = require("vimp.map_info")
 createVimpErrorWrapper = require("vimp.error_wrapper")
+UniqueTrie = require("vimp.unique_trie")
 
 ExtraOptions = { repeatable:true, force:true, buffer:true }
 
@@ -32,6 +33,7 @@ class Vimp
     @_mapsById = {}
     @_uniqueMapIdCount = 1
     @_globalMapsByModeAndLhs = {x,{} for x in *AllModes}
+    @_globalTrieByMode = {}
     @_mapErrorHandlingStrategy = MapErrorStrategies.logUserStackTrace
     @\_initialize!
 
@@ -76,9 +78,11 @@ class Vimp
   _resetState: =>
     -- Don't bother resetting _uniqueMapIdCount to be extra safe
     tableUtil.clear(@_mapsById)
+    tableUtil.clear(@_globalTrieByMode)
 
     for mode in *AllModes
       tableUtil.clear(@_globalMapsByModeAndLhs[mode])
+      @_globalTrieByMode[mode] = UniqueTrie()
 
   _generateNewMappingId: =>
     @_uniqueMapIdCount += 1
@@ -136,12 +140,35 @@ class Vimp
 
     return nil
 
-  _rhsToString: (rhs) =>
-    if type(rhs) == 'string'
-      return rhs
+  _addToTrie: (trie, mapInfo, currentModeKeyMap) =>
+    succeeded, existingPrefix, exactMatch = trie\tryAdd(mapInfo.lhs)
 
-    assert.that(type(rhs) == 'function')
-    return 'lua function'
+    if succeeded
+      return true
+
+    -- This should never happen because we check for duplicates before this
+    assert.that(not exactMatch)
+
+    conflictMapInfos = {}
+    mappingMap = currentModeKeyMap[mapInfo.mode]
+
+    if #existingPrefix < #mapInfo.lhs
+      -- In this case, the existingPrefix must match an actual map
+      -- otherwise, the prefix would be a branch and therefore the
+      -- add would have succeeded
+      currentMapping = mappingMap[existingPrefix]
+      assert.that(currentMapping)
+      table.insert(conflictMapInfos, currentMapping)
+    else
+      assert.that(#existingPrefix == #mapInfo.lhs)
+
+      trie\visitSuffixes mapInfo.lhs, (suffix) ->
+        currentMapping = mappingMap[mapInfo.lhs .. suffix]
+        assert.that(currentMapping)
+        table.insert(conflictMapInfos, currentMapping)
+
+    conflictOutput = string.join("\n", ["    #{x\toString!}" for x in *conflictMapInfos])
+    error("Map conflict found when attempting to add map:\n    #{mapInfo\toString!}\nConflicts:\n#{conflictOutput}")
 
   _addMapping: (mode, lhs, rhs, options, extraOptions) =>
     log.debug("Adding #{mode} mode map: #{lhs}")
@@ -180,12 +207,13 @@ class Vimp
 
     if currentInfo
       assert.that(extraOptions.force,
-        "Found duplicate mapping for keys '#{lhs}' in mode '#{mode}'.  Ignoring second attempt.  Current Mapping: #{@\_rhsToString(currentInfo.rhs)}, New Mapping: #{@\_rhsToString(rhs)}")
+        "Found duplicate mapping for keys '#{lhs}' in mode '#{mode}'.  Ignoring second attempt.  Current Mapping: #{currentInfo\getRhsDisplayText!}, New Mapping: #{mapInfo\getRhsDisplayText!}")
 
       currentInfo\removeFromVim!
       @_mapsById[currentInfo.id] = nil
       @_globalMapsByModeAndLhs[mode][lhs] = nil
 
+    @\_addToTrie(@_globalTrieByMode[mode], mapInfo, @_globalMapsByModeAndLhs)
     mapInfo\addToVim!
 
     -- Do this after actually executing the mapping in case there's errors

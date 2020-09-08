@@ -10,9 +10,8 @@ TestKeys2 = '<space>abc'
 
 class Tester
   testDisallowsShadowing: =>
-    -- TODO
-    -- helpers.unlet('foo')
-    -- vimp.nnoremap TestKeys1, [[:let g:foo = 5<cr>]]
-    -- assert.throws "blurg", ->
-    --   vimp.nnoremap TestKeys2, [[:let g:foo = 2<cr>]]
+    helpers.unlet('foo')
+    vimp.nnoremap TestKeys1, [[:let g:foo = 5<cr>]]
+    assert.throws "blurg", ->
+      vimp.nnoremap TestKeys2, [[:let g:foo = 2<cr>]]
 
