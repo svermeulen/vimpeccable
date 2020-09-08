@@ -29,9 +29,10 @@ class Tester
   testXnoremap: =>
     received = false
     vimp.xnoremap TestKeys, ->
+      helpers.input("iw")
       received = true
     assert.that(not received)
-    helpers.input("istart middle end<esc>Fmviw")
+    helpers.input("istart middle end<esc>Fmv")
     helpers.rinput(TestKeys)
     helpers.input("cfoo<esc>")
     assert.isEqual(helpers.getLine!, 'start foo end')
@@ -58,11 +59,15 @@ class Tester
         received = true
 
   testOnoremap: =>
-    -- Not supported
-    assert.throws 'not currently supported', ->
-      received = false
-      vimp.onoremap TestKeys, ->
-        received = true
+    received = false
+    vimp.onoremap TestKeys, ->
+      helpers.input("iw")
+      received = true
+    assert.that(not received)
+    helpers.input("istart middle end<esc>Fm")
+    helpers.rinput("d#{TestKeys}")
+    assert.isEqual(helpers.getLine!, 'start  end')
+    assert.that(received)
 
   testTnoremap: =>
     -- Not supported
@@ -97,7 +102,7 @@ class Tester
         -- do nothing
 
   testOmap: =>
-    assert.throws "not currently supported", ->
+    assert.throws "recursive mapping", ->
       vimp.omap TestKeys, ->
         -- do nothing
 

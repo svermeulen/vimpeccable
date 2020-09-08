@@ -27,9 +27,6 @@ class MapInfo
     assert.that(@mode != 'c',
       "Lua function maps for command mode are not currently supported.  Can you use an <expr> lua function instead?")
 
-    assert.that(@mode != 'o',
-      "Lua function maps for operation mode are not currently supported.  Can you use an <expr> lua function instead?")
-
     assert.that(@mode != 't',
       "Lua function maps for terminal mode are not currently supported.  Can you use an <expr> lua function instead?")
 
@@ -41,6 +38,7 @@ class MapInfo
     if @mode == 's'
       return "<esc>:lua _vimp:_executeMap(#{@id})<cr>"
 
+    -- This should work for normal, visual, and operation mode
     return ":<c-u>lua _vimp:_executeMap(#{@id})<cr>"
 
   getRhsDisplayText: =>

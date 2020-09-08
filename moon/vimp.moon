@@ -55,7 +55,7 @@ class Vimp
     return @_mapErrorHandlingStrategy
 
   _setMapErrorHandlingStrategy: (strategy) =>
-    assert.that(strategy >= 1 and strategy <= 5, "Invalid map error handling strategy '#{strategy}'")
+    assert.that(strategy >= 1 and strategy <= 6, "Invalid map error handling strategy '#{strategy}'")
     @_mapErrorHandlingStrategy = strategy
 
   _observeBufferUnload: =>
