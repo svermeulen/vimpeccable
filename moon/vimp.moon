@@ -121,13 +121,22 @@ class Vimp
       rhs = arg2
 
     assert.that(type(optionsList) == 'table')
-    assert.that(type(lhs) == 'string')
+
+    lhsList = {}
+    if type(lhs) == 'table'
+      for entry in *lhs
+        assert.that(type(entry) == 'string')
+        table.insert(lhsList, entry)
+    else
+      assert.that(type(lhs) == 'string')
+      table.insert(lhsList, lhs)
+
     assert.that(type(rhs) == 'function' or type(rhs) == 'string')
 
     optionsMap = {x,true for x in *optionsList when not ExtraOptions[x]}
     extraOptionsMap = {x,true for x in *optionsList when ExtraOptions[x]}
 
-    return optionsMap, extraOptionsMap, lhs, rhs
+    return optionsMap, extraOptionsMap, lhsList, rhs
 
   _executeCommandMap: (mapId, userArgs) =>
     map = @_commandMapsById[mapId]
@@ -286,11 +295,14 @@ class Vimp
       id, mode, options, extraOptions, lhs, rhs, bufferHandle)
 
   _addNonRecursiveMap: (mode, ...) =>
-    options, extraOptions, lhs, rhs = @\_convertArgs(...)
+    options, extraOptions, lhsList, rhs = @\_convertArgs(...)
     assert.that(options.noremap == nil)
     options.noremap = true
-    map = @\_createMapInfo(mode, lhs, rhs, options, extraOptions)
-    @\_addMapping(map)
+    assert.that(#lhsList > 0)
+    for lhs in *lhsList
+      map = @\_createMapInfo(
+        mode, lhs, rhs, tableUtil.shallowCopy(options), tableUtil.shallowCopy(extraOptions))
+      @\_addMapping(map)
 
   tnoremap: (...) =>
     @\_addNonRecursiveMap('t', ...)
@@ -317,10 +329,13 @@ class Vimp
     @\_addNonRecursiveMap('n', ...)
 
   _addRecursiveMap: (mode, ...) =>
-    options, extraOptions, lhs, rhs = @\_convertArgs(...)
+    options, extraOptions, lhsList, rhs = @\_convertArgs(...)
     assert.that(options.noremap == nil)
-    map = @\_createMapInfo(mode, lhs, rhs, options, extraOptions)
-    @\_addMapping(map)
+    assert.that(#lhsList > 0)
+    for lhs in *lhsList
+      map = @\_createMapInfo(
+        mode, lhs, rhs, tableUtil.shallowCopy(options), tableUtil.shallowCopy(extraOptions))
+      @\_addMapping(map)
 
   tmap: (...) =>
     @\_addRecursiveMap('t', ...)

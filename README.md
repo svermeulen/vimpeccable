@@ -10,6 +10,7 @@ Features
 * Better error handling for lua maps
 * Add maps to non-active buffers
 * Ability to create lua based user commands
+* Ability to map multiple keys at once
 
 Usage
 
