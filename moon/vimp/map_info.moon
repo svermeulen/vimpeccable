@@ -2,9 +2,10 @@
 assert = require("vimp.util.assert")
 
 class MapInfo
-  new: (id, mode, options, extraOptions, lhs, rhs, bufferHandle) =>
+  new: (id, mode, options, extraOptions, actualLhs, lhs, rhs, bufferHandle) =>
     @id = id
     @lhs = lhs
+    @actualLhs = actualLhs
     @rhs = rhs
     @options = options
     @extraOptions = extraOptions
@@ -52,15 +53,15 @@ class MapInfo
   addToVim: =>
     actualRhs = @\_getActualRhs!
     if @bufferHandle != nil
-      vim.api.nvim_buf_set_keymap(@bufferHandle, @mode, @lhs, actualRhs, @options)
+      vim.api.nvim_buf_set_keymap(@bufferHandle, @mode, @actualLhs, actualRhs, @options)
     else
-      vim.api.nvim_set_keymap(@mode, @lhs, actualRhs, @options)
+      vim.api.nvim_set_keymap(@mode, @actualLhs, actualRhs, @options)
 
   removeFromVim: =>
     if @bufferHandle != nil
-      vim.api.nvim_buf_del_keymap(@bufferHandle, @mode, @lhs)
+      vim.api.nvim_buf_del_keymap(@bufferHandle, @mode, @actualLhs)
     else
-      vim.api.nvim_del_keymap(@mode, @lhs)
+      vim.api.nvim_del_keymap(@mode, @actualLhs)
 
   toString: =>
     return "'#{@lhs}' -> '#{@\getRhsDisplayText!}'"

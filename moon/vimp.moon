@@ -34,6 +34,7 @@ class Vimp
     @_mapsById = {}
     @_commandMapsById = {}
     @_uniqueMapIdCount = 1
+    @_aliases = {}
     @_globalMapsByModeAndLhs = {}
     @_globalTrieByMode = {}
     @_bufferInfos = {}
@@ -120,7 +121,7 @@ class Vimp
       lhs = arg1
       rhs = arg2
 
-    assert.that(type(optionsList) == 'table')
+    assert.that(type(optionsList) == 'table', "Expected to find an options table but instead found: #{optionsList}")
 
     lhsList = {}
     if type(lhs) == 'table'
@@ -258,6 +259,15 @@ class Vimp
     succeeded, existingPrefix, exactMatch = trie\tryAdd(map.lhs)
     assert.that(succeeded)
 
+  addAlias: (alias, replacement) =>
+    assert.that(not @_aliases[alias], "Found multiple aliases with key '#{alias}'")
+    @_aliases[alias] = replacement
+
+  _applyAliases: (lhs) =>
+    for k,v in pairs(@_aliases)
+      lhs = stringUtil.replace(lhs, k, v)
+    return lhs
+
   _createMapInfo: (mode, lhs, rhs, options, extraOptions) =>
     log.debug("Adding #{mode} mode map: #{lhs}")
 
@@ -291,8 +301,10 @@ class Vimp
     id = @\_generateNewMappingId!
     assert.that(@_mapsById[id] == nil)
 
+    actualLhs = @\_applyAliases(lhs)
+
     return MapInfo(
-      id, mode, options, extraOptions, lhs, rhs, bufferHandle)
+      id, mode, options, extraOptions, actualLhs, lhs, rhs, bufferHandle)
 
   bind: (modes, ...) =>
     options, extraOptions, lhsList, rhs = @\_convertArgs(...)
@@ -391,6 +403,7 @@ class Vimp
       map\removeFromVim!
 
     tableUtil.clear(@_commandMapsById)
+    tableUtil.clear(@_aliases)
 
     -- Don't bother resetting _uniqueMapIdCount to be extra safe
     log.debug("Successfully unmapped #{count} maps")

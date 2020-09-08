@@ -20,3 +20,14 @@ class String
   charAt: (value, index) ->
     return value\sub(index, index)
 
+  _addEscapeChars: (value) ->
+    -- gsub is not ideal in cases where we want to do a literal
+    -- replace, so to do this just escape all special characters with '%'
+    value = value\gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%0")
+    -- Note that we don't put this all in the return statement to avoid
+    -- forwarding the multiple return values causing subtle errors
+    return value
+
+  replace: (value, old, new) ->
+    return value\gsub(String._addEscapeChars(old), new)
+
