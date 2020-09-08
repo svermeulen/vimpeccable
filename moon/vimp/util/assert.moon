@@ -16,7 +16,7 @@ class assert
   throws: (errorPattern, action) ->
     ok, errorStr = pcall(action)
     assert.that(not ok, 'Expected exception but instead nothing was thrown')
-    assert.that(errorStr\find(errorPattern) != nil, "Unexpected error message!  Expected '#{errorPattern}' but found '#{errorStr}'")
+    assert.that(errorStr\find(errorPattern) != nil, "Unexpected error message!  Expected '#{errorPattern}' but found:\n#{errorStr}")
 
   isEqual: (left, right) ->
     assert.that(left == right, "Expected '#{left}' to be equal to '#{right}'")

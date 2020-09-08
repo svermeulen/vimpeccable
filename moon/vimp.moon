@@ -3,6 +3,7 @@ assert = require("vimp.util.assert")
 log = require("vimp.util.log")
 try = require("vimp.util.try")
 tableUtil = require("vimp.util.table")
+stringUtil = require("vimp.util.string")
 util = require("vimp.util.util")
 MapInfo = require("vimp.map_info")
 createVimpErrorWrapper = require("vimp.error_wrapper")
@@ -183,7 +184,7 @@ class Vimp
         assert.that(currentInfo)
         table.insert(conflictMapInfos, currentInfo)
 
-    conflictOutput = string.join("\n", ["    #{x\toString!}" for x in *conflictMapInfos])
+    conflictOutput = stringUtil.join("\n", ["    #{x\toString!}" for x in *conflictMapInfos])
     error("Map conflict found when attempting to add map:\n    #{mapInfo\toString!}\nConflicts:\n#{conflictOutput}")
 
   _newBufInfo: =>
