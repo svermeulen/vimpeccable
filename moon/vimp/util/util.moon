@@ -14,12 +14,3 @@ class Util
     vim.api.nvim_feedkeys(
       Util.replaceSpecialChars(keys), 'mx', true)
 
-  callAndWrapErrors: (func) ->
-    success, retValue = xpcall func, (err) ->
-      debug.traceback(err, 2)
-
-    if success
-      return retValue
-
-    error(retValue)
-

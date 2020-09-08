@@ -3,7 +3,6 @@ require('vimp')
 stringUtil = require('vimp.util.string')
 assert = require("vimp.util.assert")
 log = require("vimp.util.log")
-try = require("vimp.util.try")
 util = require("vimp.util.util")
 
 class TestRunner
@@ -20,22 +19,29 @@ class TestRunner
     vim.cmd("b #{bufferHandle}")
     -- Always throw exceptions during testing
     vimp.mapErrorHandlingStrategy = vimp.mapErrorHandlingStrategies.none
-    try
-      do: ->
-        func!
-        vimp.unmapAll!
-      finally: ->
-        vim.api.nvim_set_current_tabpage(testTab)
-        vim.cmd('tabclose')
-        vim.cmd("bd! #{bufferHandle}")
-        vim.api.nvim_set_current_tabpage(startTab)
-        -- Try this in case the error occurred during func!
-        -- We don't _just_ do this because we want the error from
-        -- unmapAll to propagate if it gets that far
-        try
-          do: vimp.unmapAll
-          catch: ->
-            -- do nothing
+
+    action = ->
+      func!
+      vimp.unmapAll!
+
+    success, retValue = xpcall(action, debug.traceback)
+
+    vim.api.nvim_set_current_tabpage(testTab)
+    vim.cmd('tabclose')
+    vim.cmd("bd! #{bufferHandle}")
+    vim.api.nvim_set_current_tabpage(startTab)
+
+    -- Try this in case the error occurred during func!
+    -- And just ignore any errors that occur
+    -- We don't _just_ do this because we want the error from
+    -- unmapAll to propagate if it gets that far
+    -- This is nice because it will remove the maps from vim
+    -- so we might not need to do a full restart to avoid getting
+    -- errors if we run the tests again
+    pcall(vimp.unmapAll)
+
+    if not success
+      error(retValue, 2)
 
   runTestFile: (filePath) =>
     successCount = @\_runTestFile(filePath)

@@ -1,7 +1,6 @@
 
 assert = require("vimp.util.assert")
 log = require("vimp.util.log")
-try = require("vimp.util.try")
 tableUtil = require("vimp.util.table")
 stringUtil = require("vimp.util.string")
 util = require("vimp.util.util")
