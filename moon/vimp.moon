@@ -354,10 +354,10 @@ class Vimp
     id = @\_generateNewMappingId!
     assert.that(@_mapsById[id] == nil)
 
-    actualLhs = @\_applyAliases(lhs)
+    expandedLhs = @\_applyAliases(lhs)
 
     return MapInfo(
-      id, mode, options, extraOptions, actualLhs, lhs, rhs, bufferHandle)
+      id, mode, options, extraOptions, expandedLhs, lhs, rhs, bufferHandle)
 
   bind: (...) =>
     modes, options, extraOptions, lhsList, rhs = @\_convertArgs(...)
