@@ -2,10 +2,11 @@
 assert = require("vimp.util.assert")
 
 class MapInfo
-  new: (id, mode, options, extraOptions, expandedLhs, lhs, rhs, bufferHandle) =>
+  new: (id, mode, options, extraOptions, lhs, expandedLhs, rawLhs, rhs, bufferHandle) =>
     @id = id
     @lhs = lhs
     @expandedLhs = expandedLhs
+    @rawLhs = rawLhs
     @rhs = rhs
     @options = options
     @extraOptions = extraOptions

@@ -355,9 +355,10 @@ class Vimp
     assert.that(@_mapsById[id] == nil)
 
     expandedLhs = @\_applyAliases(lhs)
+    rawLhs = vim.api.nvim_replace_termcodes(expandedLhs, true, false, true)
 
     return MapInfo(
-      id, mode, options, extraOptions, expandedLhs, lhs, rhs, bufferHandle)
+      id, mode, options, extraOptions, lhs, expandedLhs, rawLhs, rhs, bufferHandle)
 
   bind: (...) =>
     modes, options, extraOptions, lhsList, rhs = @\_convertArgs(...)
