@@ -36,6 +36,7 @@ class Vimp
     @_globalTrieByMode = {}
     @_bufferInfos = {}
     @_mapErrorHandlingStrategy = MapErrorStrategies.logUserStackTrace
+    @_bufferBlockHandle = nil
 
     for m in *AllModes
       @_globalMapsByModeAndLhs[m] = {}
@@ -234,9 +235,10 @@ class Vimp
   _createMapInfo: (mode, lhs, rhs, options, extraOptions) =>
     log.debug("Adding #{mode} mode map: #{lhs}")
 
-    bufferHandle = nil
+    bufferHandle = @_bufferBlockHandle
 
     if extraOptions.buffer
+      assert.that(bufferHandle == nil, "Do not specify <buffer> option when inside a call to vimp.addBufferMaps")
       bufferHandle = vim.api.nvim_get_current_buf()
 
     assert.that(options.unique == nil, "The <unique> option is already on by default, and is disabled with the <force> option")
@@ -349,6 +351,17 @@ class Vimp
 
     -- Don't bother resetting _uniqueMapIdCount to be extra safe
     log.debug("Successfully unmapped #{count} maps")
+
+  addBufferMaps: (bufferHandle, func) =>
+    assert.that(bufferHandle != nil)
+    assert.that(@_bufferBlockHandle == nil, "Already in a call to vimp.addBufferMaps!  Must exit this first before attempting another.")
+    @_bufferBlockHandle = bufferHandle
+    ok, retVal = pcall(func)
+    assert.isEqual(@_bufferBlockHandle, bufferHandle)
+    @_bufferBlockHandle = nil
+
+    if not ok
+      error(retVal, 2)
 
 export vimp, _vimp
 _vimp = Vimp()

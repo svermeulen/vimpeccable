@@ -8,6 +8,7 @@ Features
 * Built in support to make any map repeatable
 * Better lua stack traces
 * Better error handling for lua maps
+* Add maps to non-active buffers
 
 Usage
 
