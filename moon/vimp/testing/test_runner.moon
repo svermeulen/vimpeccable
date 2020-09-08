@@ -59,7 +59,7 @@ class TestRunner
   runTestMethod: (filePath, testName) =>
     testClass = dofile(filePath)
     tester = testClass!
-    log.debug("Executing test #{testName}...")
+    log.info("Executing test #{testName}...")
     @\_runTestFunc ->
       tester[testName](tester)
     log.info("Test #{testName} completed successfully")

@@ -11,6 +11,9 @@ class UniqueTrie
   new: =>
     @root = {}
 
+  isEmpty: =>
+    return next(@root) == nil
+
   _tryRemove: (node, index, data) =>
     c = data\byte(index)
     child = node[c]
@@ -87,7 +90,7 @@ class UniqueTrie
   -- Adds the data to the trie
   -- Returns 0 on success, and otherwise returns the index
   -- where the conflict was encountered
-  tryAdd: (data) =>
+  tryAdd: (data, dryRun) =>
     currentNode = @root
     isNew = false
 
@@ -103,7 +106,8 @@ class UniqueTrie
       if not nextNode
         nextNode = {}
         isNew = true
-        currentNode[c] = nextNode
+        if not dryRun
+          currentNode[c] = nextNode
 
       currentNode = nextNode
 

@@ -32,10 +32,16 @@ class Vimp
   new: =>
     @_mapsById = {}
     @_uniqueMapIdCount = 1
-    @_globalMapsByModeAndLhs = {x,{} for x in *AllModes}
+    @_globalMapsByModeAndLhs = {}
     @_globalTrieByMode = {}
+    @_bufferInfos = {}
     @_mapErrorHandlingStrategy = MapErrorStrategies.logUserStackTrace
-    @\_initialize!
+
+    for m in *AllModes
+      @_globalMapsByModeAndLhs[m] = {}
+      @_globalTrieByMode[m] = UniqueTrie()
+
+    @\_observeBufferUnload!
 
   _getMapErrorHandlingStrategies: =>
     return MapErrorStrategies
@@ -47,9 +53,7 @@ class Vimp
     assert.that(strategy >= 1 and strategy <= 5, "Invalid map error handling strategy '#{strategy}'")
     @_mapErrorHandlingStrategy = strategy
 
-  _initialize: =>
-    @\_resetState!
-
+  _observeBufferUnload: =>
     -- Note that we want to use BufUnload here and not BufDelete because BufDelete
     -- does not get triggered for unlisted buffers
     vim.cmd [[augroup vimpBufWatch]]
@@ -62,27 +66,40 @@ class Vimp
     keys = tableUtil.getKeys(@_mapsById)
     return #keys
 
+  _removeMapping: (map) =>
+    -- Remove from vim first in case it fails
+    map\removeFromVim!
+    @_mapsById[map.id] = nil
+
+    modeMaps, trie = @\_getModeMapsAndTrie(map)
+
+    assert.that(modeMaps[map.lhs] != nil)
+    modeMaps[map.lhs] = nil
+
+    success = trie\tryRemove(map.lhs)
+    assert.that(success)
+
   _onBufferUnloaded: =>
     bufferHandle = tonumber(vim.fn.expand("<abuf>"))
+
     -- Store it first since we are removing from _mapsById at the same time
-    bufferKeyMaps = [x for k, x in pairs(@_mapsById) when x.bufferHandle == bufferHandle]
+    bufferMaps = [x for k, x in pairs(@_mapsById) when x.bufferHandle == bufferHandle]
+
+    if #bufferMaps == 0
+      assert.that(@_bufferInfos[bufferHandle] == nil)
+      return
+
+    bufInfo = @_bufferInfos[bufferHandle]
+    assert.that(bufInfo)
 
     count = 0
-    for map in *bufferKeyMaps
-      map\removeFromVim!
-      @_mapsById[map.id] = nil
+    for map in *bufferMaps
+      @\_removeMapping(map)
       count += 1
 
+    @_bufferInfos[bufferHandle] = nil
+
     -- log.debug("Removed #{count} maps for #{bufferHandle}")
-
-  _resetState: =>
-    -- Don't bother resetting _uniqueMapIdCount to be extra safe
-    tableUtil.clear(@_mapsById)
-    tableUtil.clear(@_globalTrieByMode)
-
-    for mode in *AllModes
-      tableUtil.clear(@_globalMapsByModeAndLhs[mode])
-      @_globalTrieByMode[mode] = UniqueTrie()
 
   _generateNewMappingId: =>
     @_uniqueMapIdCount += 1
@@ -140,8 +157,8 @@ class Vimp
 
     return nil
 
-  _addToTrie: (trie, mapInfo, currentModeKeyMap) =>
-    succeeded, existingPrefix, exactMatch = trie\tryAdd(mapInfo.lhs)
+  _addToTrieDryRun: (trie, mapInfo, mappingMap) =>
+    succeeded, existingPrefix, exactMatch = trie\tryAdd(mapInfo.lhs, true)
 
     if succeeded
       return true
@@ -150,27 +167,71 @@ class Vimp
     assert.that(not exactMatch)
 
     conflictMapInfos = {}
-    mappingMap = currentModeKeyMap[mapInfo.mode]
 
     if #existingPrefix < #mapInfo.lhs
       -- In this case, the existingPrefix must match an actual map
       -- otherwise, the prefix would be a branch and therefore the
       -- add would have succeeded
-      currentMapping = mappingMap[existingPrefix]
-      assert.that(currentMapping)
-      table.insert(conflictMapInfos, currentMapping)
+      currentInfo = mappingMap[existingPrefix]
+      assert.that(currentInfo)
+      table.insert(conflictMapInfos, currentInfo)
     else
       assert.that(#existingPrefix == #mapInfo.lhs)
 
       trie\visitSuffixes mapInfo.lhs, (suffix) ->
-        currentMapping = mappingMap[mapInfo.lhs .. suffix]
-        assert.that(currentMapping)
-        table.insert(conflictMapInfos, currentMapping)
+        currentInfo = mappingMap[mapInfo.lhs .. suffix]
+        assert.that(currentInfo)
+        table.insert(conflictMapInfos, currentInfo)
 
     conflictOutput = string.join("\n", ["    #{x\toString!}" for x in *conflictMapInfos])
     error("Map conflict found when attempting to add map:\n    #{mapInfo\toString!}\nConflicts:\n#{conflictOutput}")
 
-  _addMapping: (mode, lhs, rhs, options, extraOptions) =>
+  _newBufInfo: =>
+    bufInfo = {mapsByModeAndLhs: {}, triesByMode: {}}
+
+    for m in *AllModes
+      bufInfo.mapsByModeAndLhs[m] = {}
+      bufInfo.triesByMode[m] = UniqueTrie()
+
+    return bufInfo
+
+  _getModeMapsAndTrie: (map) =>
+    if map.bufferHandle != nil
+      bufInfo = @_bufferInfos[map.bufferHandle]
+
+      if bufInfo == nil
+        bufInfo = @\_newBufInfo!
+        @_bufferInfos[map.bufferHandle] = bufInfo
+
+      return bufInfo.mapsByModeAndLhs[map.mode], bufInfo.triesByMode[map.mode]
+
+    return @_globalMapsByModeAndLhs[map.mode], @_globalTrieByMode[map.mode]
+
+  _addMapping: (map) =>
+    modeMaps, trie = @\_getModeMapsAndTrie(map)
+
+    existingMap = modeMaps[map.lhs]
+
+    if existingMap
+      assert.that(map.extraOptions.force,
+        "Found duplicate mapping for keys '#{map.lhs}' in mode '#{map.mode}'.  Ignoring second attempt.  Current Mapping: #{existingMap\getRhsDisplayText!}, New Mapping: #{map\getRhsDisplayText!}")
+
+      @\_removeMapping(existingMap)
+
+    @\_addToTrieDryRun(trie, map, modeMaps)
+
+    map\addToVim!
+    -- Now that addToVim has succeeded, we can store the mapping
+    -- We need to wait until after this point in case there's errors
+    -- (eg. duplicate map)
+
+    @_mapsById[map.id] = map
+    modeMaps[map.lhs] = map
+
+    succeeded, existingPrefix, exactMatch = trie\tryAdd(map.lhs)
+    assert.that(succeeded)
+
+  _createMapInfo: (mode, lhs, rhs, options, extraOptions) =>
     log.debug("Adding #{mode} mode map: #{lhs}")
 
     bufferHandle = nil
@@ -200,32 +261,17 @@ class Vimp
             util.rnormal(rhsStr)
 
     id = @\_generateNewMappingId!
-    mapInfo = MapInfo(id, mode, options, extraOptions, lhs, rhs, bufferHandle)
     assert.that(@_mapsById[id] == nil)
 
-    currentInfo = @_globalMapsByModeAndLhs[mode][lhs]
-
-    if currentInfo
-      assert.that(extraOptions.force,
-        "Found duplicate mapping for keys '#{lhs}' in mode '#{mode}'.  Ignoring second attempt.  Current Mapping: #{currentInfo\getRhsDisplayText!}, New Mapping: #{mapInfo\getRhsDisplayText!}")
-
-      currentInfo\removeFromVim!
-      @_mapsById[currentInfo.id] = nil
-      @_globalMapsByModeAndLhs[mode][lhs] = nil
-
-    @\_addToTrie(@_globalTrieByMode[mode], mapInfo, @_globalMapsByModeAndLhs)
-    mapInfo\addToVim!
-
-    -- Do this after actually executing the mapping in case there's errors
-    -- (eg. duplicate map)
-    @_mapsById[id] = mapInfo
-    @_globalMapsByModeAndLhs[mode][lhs] = mapInfo
+    return MapInfo(
+      id, mode, options, extraOptions, lhs, rhs, bufferHandle)
 
   _addNonRecursiveMap: (mode, arg1, arg2, arg3) =>
     options, extraOptions, lhs, rhs = @\_convertArgs(arg1, arg2, arg3)
     assert.that(options.noremap == nil)
     options.noremap = true
-    @\_addMapping(mode, lhs, rhs, options, extraOptions)
+    map = @\_createMapInfo(mode, lhs, rhs, options, extraOptions)
+    @\_addMapping(map)
 
   tnoremap: (arg1, arg2, arg3) =>
     @\_addNonRecursiveMap('t', arg1, arg2, arg3)
@@ -254,7 +300,8 @@ class Vimp
   _addRecursiveMap: (mode, arg1, arg2, arg3) =>
     options, extraOptions, lhs, rhs = @\_convertArgs(arg1, arg2, arg3)
     assert.that(options.noremap == nil)
-    @\_addMapping(mode, lhs, rhs, options, extraOptions)
+    map = @\_createMapInfo(mode, lhs, rhs, options, extraOptions)
+    @\_addMapping(map)
 
   tmap: (arg1, arg2, arg3) =>
     @\_addRecursiveMap('t', arg1, arg2, arg3)
@@ -285,10 +332,22 @@ class Vimp
 
     count = 0
     for _, map in pairs(@_mapsById)
-      map\removeFromVim!
+      @\_removeMapping(map)
       count += 1
 
-    @\_resetState!
+    for mode in *AllModes
+      assert.that(#tableUtil.getKeys(@_globalMapsByModeAndLhs[mode]) == 0)
+      assert.that(@_globalTrieByMode[mode]\isEmpty!)
+
+      for _, bufInfo in pairs(@_bufferInfos)
+        assert.that(#tableUtil.getKeys(bufInfo.mapsByModeAndLhs[mode]) == 0)
+        assert.that(bufInfo.triesByMode[mode]\isEmpty!)
+
+    assert.that(#@_mapsById == 0)
+
+    tableUtil.clear(@_bufferInfos)
+
+    -- Don't bother resetting _uniqueMapIdCount to be extra safe
     log.debug("Successfully unmapped #{count} maps")
 
 export vimp, _vimp
