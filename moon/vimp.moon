@@ -132,6 +132,10 @@ class Vimp
       mode = modes\sub(i, i)
       assert.that(tableUtil.contains(AllModes, mode), "Invalid mode provided: '#{modes}'")
 
+  -- 4 params = modes, options, lhs, rhs
+  -- 3 params = (when string) modes, lhs, rhs
+  -- 3 params = (when table) options, lhs, rhs
+  -- 2 params = lhs, rhs
   _convertArgs: (arg1, arg2, arg3, arg4) =>
     local modes, optionsList, lhs, rhs
 
@@ -141,8 +145,12 @@ class Vimp
       lhs = arg3
       rhs = arg4
     else if arg3 != nil
-      optionsList = {}
-      modes = arg1
+      if type(arg1) == 'table'
+        modes = 'n'
+        optionsList = arg1
+      else
+        modes = arg1
+        optionsList = {}
       lhs = arg2
       rhs = arg3
     else
