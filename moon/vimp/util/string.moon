@@ -28,6 +28,10 @@ class String
     -- forwarding the multiple return values causing subtle errors
     return value
 
+  indexOf: (haystack, needle) ->
+    result = haystack\find(String._addEscapeChars(needle))
+    return result
+
   replace: (value, old, new) ->
     return value\gsub(String._addEscapeChars(old), new)
 

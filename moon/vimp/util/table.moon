@@ -13,3 +13,13 @@ class Table
       t2[k] = v
     return t2
 
+  indexOf: (list, item) ->
+    for i = 1,#list
+      if item == list[i]
+        return i
+
+    return -1
+
+  contains: (list, item) ->
+    return Table.indexOf(list, item) != -1
+

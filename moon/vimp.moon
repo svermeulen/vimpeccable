@@ -24,10 +24,11 @@ AllModes = [v for _, v in pairs(Modes)]
 
 MapErrorStrategies =
   logMessage: 1
-  logUserStackTrace: 2
-  logFullStackTrace: 3
-  rethrowMessage: 4
-  none: 5
+  logMinimalUserStackTrace: 2
+  logUserStackTrace: 3
+  logFullStackTrace: 4
+  rethrowMessage: 5
+  none: 6
 
 class Vimp
   new: =>
@@ -38,7 +39,7 @@ class Vimp
     @_globalMapsByModeAndLhs = {}
     @_globalTrieByMode = {}
     @_bufferInfos = {}
-    @_mapErrorHandlingStrategy = MapErrorStrategies.logUserStackTrace
+    @_mapErrorHandlingStrategy = MapErrorStrategies.logMinimalUserStackTrace
     @_bufferBlockHandle = nil
 
     for m in *AllModes
@@ -265,6 +266,9 @@ class Vimp
 
     succeeded, existingPrefix, exactMatch = trie\tryAdd(map.lhs)
     assert.that(succeeded)
+
+  _getAliases: =>
+    return @_aliases
 
   addAlias: (alias, replacement) =>
     assert.that(not @_aliases[alias], "Found multiple aliases with key '#{alias}'")
