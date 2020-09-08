@@ -33,6 +33,8 @@ return ->
     mapErrorHandlingStrategies: _vimp\_getMapErrorHandlingStrategies,
     mapErrorHandlingStrategy: _vimp\_getMapErrorHandlingStrategy,
     aliases: _vimp\_getAliases,
+    mapsInProgress: _vimp\_getMapsInProgress,
+    currentMapInfo: _vimp\_getCurrentMapInfo,
   }
   _setters = {
     mapErrorHandlingStrategy: _vimp\_setMapErrorHandlingStrategy,

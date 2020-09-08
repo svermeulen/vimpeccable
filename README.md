@@ -12,6 +12,7 @@ Features
 * Ability to create lua based user commands
 * Ability to map multiple keys at once
 * Support for key aliases
+* Context info for current map being executed
 
 Usage
 

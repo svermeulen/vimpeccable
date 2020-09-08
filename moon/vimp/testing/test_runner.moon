@@ -57,7 +57,7 @@ class TestRunner
 
     for methodName,func in pairs(getmetatable(tester))
       if stringUtil.startsWith(methodName, 'test')
-        log.info("Executing test #{methodName}...")
+        log.info("Executing test '#{methodName}' from file '#{filePath}'...")
         @\_runTestFunc -> func(tester)
         successCount += 1
 
@@ -66,7 +66,7 @@ class TestRunner
   runTestMethod: (filePath, testName) =>
     testClass = dofile(filePath)
     tester = testClass!
-    log.info("Executing test #{testName}...")
+    log.info("Executing test '#{testName}' from file '#{filePath}'...")
     @\_runTestFunc ->
       tester[testName](tester)
     log.info("Test #{testName} completed successfully")

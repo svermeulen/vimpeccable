@@ -61,7 +61,7 @@ class Tester
   testOnoremap: =>
     received = false
     vimp.onoremap TestKeys, ->
-      helpers.input("iw")
+      helpers.input("viw")
       received = true
     assert.that(not received)
     helpers.input("istart middle end<esc>Fm")

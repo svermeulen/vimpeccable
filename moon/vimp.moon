@@ -33,6 +33,7 @@ MapErrorStrategies =
 class Vimp
   new: =>
     @_mapsById = {}
+    @_mapsInProgress = {}
     @_commandMapsById = {}
     @_uniqueMapIdCount = 1
     @_aliases = {}
@@ -47,6 +48,12 @@ class Vimp
       @_globalTrieByMode[m] = UniqueTrie()
 
     @\_observeBufferUnload!
+
+  _getCurrentMapInfo: =>
+    return @_mapsInProgress[#@_mapsInProgress]
+
+  _getMapsInProgress: =>
+    return @_mapsInProgress
 
   _getMapErrorHandlingStrategies: =>
     return MapErrorStrategies
@@ -134,13 +141,13 @@ class Vimp
     lhsList = {}
     if type(lhs) == 'table'
       for entry in *lhs
-        assert.that(type(entry) == 'string')
+        assert.that(type(entry) == 'string', "Expected type string for lhs argument but found '#{type(entry)}'")
         table.insert(lhsList, entry)
     else
-      assert.that(type(lhs) == 'string')
+      assert.that(type(lhs) == 'string', "Expected type string for lhs argument but found '#{type(lhs)}'")
       table.insert(lhsList, lhs)
 
-    assert.that(type(rhs) == 'function' or type(rhs) == 'string')
+    assert.that(type(rhs) == 'function' or type(rhs) == 'string', "Expected type 'function' or 'string' for rhs argument but instead found '#{type(rhs)}'")
 
     optionsMap = {x,true for x in *optionsList when not ExtraOptions[x]}
     extraOptionsMap = {x,true for x in *optionsList when ExtraOptions[x]}
@@ -175,8 +182,12 @@ class Vimp
 
     assert.that(type(map.rhs) == 'function')
 
+    table.insert(@_mapsInProgress, map)
     -- Call user function and get the full stack trace if error occurs
     success, result = xpcall(map.rhs, debug.traceback)
+    -- Remove the last element
+    assert.that(#@_mapsInProgress > 0)
+    table.remove(@_mapsInProgress)
 
     if not success
       -- Always rethrow on errors
