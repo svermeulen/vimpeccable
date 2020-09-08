@@ -294,72 +294,78 @@ class Vimp
     return MapInfo(
       id, mode, options, extraOptions, lhs, rhs, bufferHandle)
 
-  _addNonRecursiveMap: (mode, ...) =>
+  bind: (modes, ...) =>
     options, extraOptions, lhsList, rhs = @\_convertArgs(...)
     assert.that(options.noremap == nil)
     options.noremap = true
     assert.that(#lhsList > 0)
+    assert.that(#modes > 0)
     for lhs in *lhsList
-      map = @\_createMapInfo(
-        mode, lhs, rhs, tableUtil.shallowCopy(options), tableUtil.shallowCopy(extraOptions))
-      @\_addMapping(map)
+      for i = 1, #modes
+        mode = modes\sub(i, i)
+        map = @\_createMapInfo(
+          mode, lhs, rhs, tableUtil.shallowCopy(options), tableUtil.shallowCopy(extraOptions))
+        @\_addMapping(map)
 
   tnoremap: (...) =>
-    @\_addNonRecursiveMap('t', ...)
+    @\bind('t', ...)
 
   cnoremap: (...) =>
-    @\_addNonRecursiveMap('c', ...)
+    @\bind('c', ...)
 
   snoremap: (...) =>
-    @\_addNonRecursiveMap('s', ...)
+    @\bind('s', ...)
 
   onoremap: (...) =>
-    @\_addNonRecursiveMap('o', ...)
+    @\bind('o', ...)
 
   vnoremap: (...) =>
-    @\_addNonRecursiveMap('v', ...)
+    @\bind('v', ...)
 
   xnoremap: (...) =>
-    @\_addNonRecursiveMap('x', ...)
+    @\bind('x', ...)
 
   inoremap: (...) =>
-    @\_addNonRecursiveMap('i', ...)
+    @\bind('i', ...)
 
   nnoremap: (...) =>
-    @\_addNonRecursiveMap('n', ...)
+    @\bind('n', ...)
 
-  _addRecursiveMap: (mode, ...) =>
+  rbind: (modes, ...) =>
     options, extraOptions, lhsList, rhs = @\_convertArgs(...)
     assert.that(options.noremap == nil)
     assert.that(#lhsList > 0)
+    assert.that(#modes > 0)
     for lhs in *lhsList
-      map = @\_createMapInfo(
-        mode, lhs, rhs, tableUtil.shallowCopy(options), tableUtil.shallowCopy(extraOptions))
-      @\_addMapping(map)
+      for i = 1, #modes
+        mode = modes\sub(i, i)
+        map = @\_createMapInfo(
+          mode, lhs, rhs, tableUtil.shallowCopy(options), tableUtil.shallowCopy(extraOptions))
+        @\_addMapping(map)
 
   tmap: (...) =>
-    @\_addRecursiveMap('t', ...)
+    @\rbind('t', ...)
 
   cmap: (...) =>
-    @\_addRecursiveMap('c', ...)
+    @\rbind('c', ...)
 
   smap: (...) =>
-    @\_addRecursiveMap('s', ...)
+    @\rbind('s', ...)
 
   omap: (...) =>
-    @\_addRecursiveMap('o', ...)
+    @\rbind('o', ...)
 
   vmap: (...) =>
-    @\_addRecursiveMap('v', ...)
+    @\rbind('v', ...)
 
   xmap: (...) =>
-    @\_addRecursiveMap('x', ...)
+    @\rbind('x', ...)
 
   imap: (...) =>
-    @\_addRecursiveMap('i', ...)
+    @\rbind('i', ...)
 
   nmap: (...) =>
-    @\_addRecursiveMap('n', ...)
+    @\rbind('n', ...)
 
   unmapAll: =>
     log.debug("Unmapping all maps")

@@ -1,5 +1,6 @@
 
 assert = require("vimp.util.assert")
+stringUtil = require("vimp.util.string")
 
 class Helpers
   -- recursive input
@@ -11,6 +12,13 @@ class Helpers
   input: (keys) ->
     rawKeys = vim.api.nvim_replace_termcodes(keys, true, false, true)
     vim.api.nvim_feedkeys(rawKeys, 'nx', false)
+
+  getCursorColumn: ->
+    pos = vim.api.nvim_win_get_cursor(vim.api.nvim_get_current_win())
+    return pos[2]
+
+  getCursorCharacter: ->
+    return stringUtil.charAt(Helpers.getLine!, Helpers.getCursorColumn! + 1)
 
   setLines: (lines) ->
     bufferHandle = vim.api.nvim_get_current_buf()

@@ -17,3 +17,6 @@ class String
       result ..= tostring(item)
     return result
 
+  charAt: (value, index) ->
+    return value\sub(index, index)
+
