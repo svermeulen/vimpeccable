@@ -117,6 +117,21 @@ class Vimp
     @_uniqueMapIdCount += 1
     return @_uniqueMapIdCount
 
+  _validateArgs: (modes, options, extraOptions, lhsList, rhs) =>
+    assert.that(#lhsList > 0)
+    assert.that(#modes > 0, "Zero modes provided")
+
+    assert.that(type(rhs) == 'function' or type(rhs) == 'string',
+      "Expected type 'function' or 'string' for rhs argument but instead found '#{type(rhs)}'")
+
+    for lhs in *lhsList
+      assert.that(type(lhs) == 'string',
+        "Expected type string for lhs argument but found '#{type(lhs)}'")
+
+    for i = 1, #modes
+      mode = modes\sub(i, i)
+      assert.that(tableUtil.contains(AllModes, mode), "Invalid mode provided: '#{modes}'")
+
   _convertArgs: (arg1, arg2, arg3, arg4) =>
     local modes, optionsList, lhs, rhs
 
@@ -138,21 +153,13 @@ class Vimp
 
     assert.that(type(optionsList) == 'table', "Expected to find an options table but instead found: #{optionsList}")
 
-    lhsList = {}
-    if type(lhs) == 'table'
-      for entry in *lhs
-        assert.that(type(entry) == 'string', "Expected type string for lhs argument but found '#{type(entry)}'")
-        table.insert(lhsList, entry)
-    else
-      assert.that(type(lhs) == 'string', "Expected type string for lhs argument but found '#{type(lhs)}'")
-      table.insert(lhsList, lhs)
-
-    assert.that(type(rhs) == 'function' or type(rhs) == 'string', "Expected type 'function' or 'string' for rhs argument but instead found '#{type(rhs)}'")
+    if type(lhs) == 'string'
+      lhs = {lhs}
 
     optionsMap = {x,true for x in *optionsList when not ExtraOptions[x]}
     extraOptionsMap = {x,true for x in *optionsList when ExtraOptions[x]}
 
-    return modes, optionsMap, extraOptionsMap, lhsList, rhs
+    return modes, optionsMap, extraOptionsMap, lhs, rhs
 
   _executeCommandMap: (mapId, userArgs) =>
     map = @_commandMapsById[mapId]
@@ -330,10 +337,10 @@ class Vimp
 
   bind: (...) =>
     modes, options, extraOptions, lhsList, rhs = @\_convertArgs(...)
+    -- Validate seperately because error_wrapper uses _convertArgs
+    @\_validateArgs(modes, options, extraOptions, lhsList, rhs)
     assert.that(options.noremap == nil)
     options.noremap = true
-    assert.that(#lhsList > 0)
-    assert.that(#modes > 0)
     for lhs in *lhsList
       for i = 1, #modes
         mode = modes\sub(i, i)
@@ -367,9 +374,9 @@ class Vimp
 
   rbind: (...) =>
     modes, options, extraOptions, lhsList, rhs = @\_convertArgs(...)
+    -- Validate seperately because error_wrapper uses _convertArgs
+    @\_validateArgs(modes, options, extraOptions, lhsList, rhs)
     assert.that(options.noremap == nil)
-    assert.that(#lhsList > 0)
-    assert.that(#modes > 0)
     for lhs in *lhsList
       for i = 1, #modes
         mode = modes\sub(i, i)
