@@ -352,6 +352,10 @@ class Vimp
           else
             util.rnormal(rhsStr)
 
+    if type(rhs) == 'function'
+      -- Neccessary to avoid printing out ':lua _vimp:_executeMap(146)' every time
+      options.silent = true
+
     id = @\_generateNewMappingId!
     assert.that(@_mapsById[id] == nil)
 
