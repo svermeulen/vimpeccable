@@ -1,11 +1,11 @@
 
-# Vimpeccable:  Write your .vimrc in Lua!
+# Vimpeccable
 
-# Introduction
+## Introduction: Write your .vimrc in Lua!
 
 Vimpeccable is a plugin for Neovim that allows you to easily replace your vimscript-based `.vimrc` with a lua-based one instead.  This plugin adds to the existing Neovim lua API by adding commands to easily add maps directly from lua.
 
-# Quick Start Example
+## Quick Start Example
 
 Given the following .vimrc:
 
@@ -122,24 +122,19 @@ vim.cmd('colorscheme gruvbox')
 
 You can also use any other lua-based language such as Fennel, Teal, etc. in similar fashion.
 
-# Features / Table of Contents
+# Table of Contents
 
-* Installation and Usage
-* Binding keys directly to a lua function
-* Easy hot reloading/unloading of entire config
-* Automatic detection of duplicate maps
-* Automatic detection of shadowed maps
-* Built in support to make any map repeatable
-* Better lua stack traces
-* Better error handling for lua maps
-* Add maps to non-active buffers
-* Ability to create lua based user commands
-* Ability to map multiple keys at once
-* Support for key aliases
+* [Installation and Usage](#installation-and-usage)
+* [Easy Hot Reloading of Entire Vimrc Plugin](#easy-hot-reloading-of-entire-vimrc-plugin)
+* Automatic detection of duplicate/shadowed maps
+* Repeatable Maps
+* Better Error Handling
+* User Commands Maps
+* Key Aliases
+* Chord Cancellation Maps
 * Context info for current map being executed
-* Chord cancellation maps
 
-# Installation and Usage
+# Installation and Usage (lua)
 
 To use the example lua vimrc displayed above, you can start by changing your neovim `init.vim` file to the following:
 
@@ -149,13 +144,25 @@ Plug 'svermeulen/vimpeccable-lua-vimrc-example'
 Plug 'svermeulen/vimpeccable'
 Plug 'morhetz/gruvbox'
 call plug#end()
-
-lua require('vimrc')
 ```
 
 For the purposes of this example we will use [vim-plug](https://github.com/junegunn/vim-plug) but you are of course free to use whichever plugin manager you prefer.
 
-Or, to use the moonscript vimrc displayed above instead, use this:
+Then, open Neovim, execute `:PlugInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world')
+
+If you then look inside the `~/.config/nvim/plugged/vimpeccable-lua-vimrc-example` directory, you should see two files: `/lua/vimrc.lua` and `/plugin/vimrc.vim`.  Inside vimrc.vim all it does is the load `vimrc.lua` like this:
+
+```vimL
+lua require('vimrc')
+```
+
+This file is necessary because Neovim does not have support yet for directly executing lua yet, however this [is planned](https://github.com/neovim/neovim/pull/8720).  In the meantime, we need to bootstrap our lua vimrc with this `vimrc.vim` file.  Note that this works because vim will automatically source any `.vim` files found inside a `plugin` directory inside a plugin.  And when executing `lua require('vimrc')`, neovim will look for a file named `vimrc.lua` in all the `lua` directories on the `runtimepath`, and then execute that.
+
+To view the `vimrc.lua` file, press `<space>ev`, which you will see is the same as the quickstart lua config example posted above.
+
+# Installation and Usage (moonscript)
+
+As mentioned, you can also implement your vimrc using any language that compiles to lua, such as MoonScript.  You can do this by changing your neovim `init.vim` file to the following:
 
 ```vimL
 call plug#begin()
@@ -164,15 +171,13 @@ Plug 'svermeulen/vimpeccable-moonscript-vimrc-example'
 Plug 'svermeulen/vimpeccable'
 Plug 'morhetz/gruvbox'
 call plug#end()
-
-lua require('vimrc')
 ```
 
-In both cases, after adding this, open Neovim, execute `:PlugInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world')
+Before opening neovim you will also need to make sure that you have MoonScript installed and then `moonc` is available on the command line.  Then, as before, you can open up neovim, execute `:PlugInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world')
 
-This works because when we call `lua require('vimrc')`, neovim will look for a file named `vimrc.lua` in all the `lua` directories on the `runtimepath`.  And since our `vimpeccable-moonscript-vimrc-example` / `vimpeccable-lua-vimrc-example` plugins have this file, this file gets executed, and initializes our config.
+Note that in this case we added an extra plugin above named `nvim-moonmaker`.  This plugin does the work of lazily compiling our moonscript files to lua, which is necessary because neovim does not support moonscript out of the box.  See the [nvim-moonmaker](https://github.com/svermeulen/nvim-moonmaker) page for more details.
 
-Note also that when using the moonscript based vimrc, that we also installed [nvim-moonmaker](https://github.com/svermeulen/nvim-moonmaker), and that we installed this first.  This is important to ensure that our moonscript vimrc is always automatically compiled into lua during startup.
+To view the `vimrc.moon` file, press `<space>ev`, which you will see is the same as the quickstart moonscript config example posted above.
 
 # Vimpeccable Command Syntax
 
@@ -245,7 +250,18 @@ vimp.rbind 'nx', {'<leader>c', 'gc'}, '<plug>Commentary'
 
 Which in vimscript would require 4 different statements for each variation.
 
-# Vimpeccable Command Syntax
+# Easy Hot Reloading of Entire Vimrc Plugin
+
+It is common to regularly be making tweaks to your vimrc.  In order to make edits at runtime without requiring a full restart of vim, often what people do is open up their vimrc and then simply execute `:so %` to re-source it.  The lua equivalent of this would be `:luafile %`, however, if we were to attempt this when using vimpeccable we would get errors complaining about duplicate maps.
+
+
+
+
+
+
+# Duplicate Map Detection
+
+
 
 
 
