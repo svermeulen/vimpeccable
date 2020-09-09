@@ -145,10 +145,12 @@ To use the example lua vimrc displayed above, you can start by changing your neo
 
 ```vimL
 call plug#begin()
-Plug 'svermeulen/vimpeccable-lua-example'
+Plug 'svermeulen/vimpeccable-lua-vimrc-example'
 Plug 'svermeulen/vimpeccable'
 Plug 'morhetz/gruvbox'
 call plug#end()
+
+lua require('vimrc')
 ```
 
 For the purposes of this example we will use [vim-plug](https://github.com/junegunn/vim-plug) but you are of course free to use whichever plugin manager you prefer.
@@ -158,23 +160,94 @@ Or, to use the moonscript vimrc displayed above instead, use this:
 ```vimL
 call plug#begin()
 Plug 'svermeulen/nvim-moonmaker'
-Plug 'svermeulen/vimpeccable-moonscript-example'
+Plug 'svermeulen/vimpeccable-moonscript-vimrc-example'
 Plug 'svermeulen/vimpeccable'
 Plug 'morhetz/gruvbox'
 call plug#end()
+
+lua require('vimrc')
 ```
 
 In both cases, after adding this, open Neovim, execute `:PlugInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world')
 
-Note:
-- 
+This works because when we call `lua require('vimrc')`, neovim will look for a file named `vimrc.lua` in all the `lua` directories on the `runtimepath`.  And since our `vimpeccable-moonscript-vimrc-example` / `vimpeccable-lua-vimrc-example` plugins have this file, this file gets executed, and initializes our config.
+
+Note also that when using the moonscript based vimrc, that we also installed [nvim-moonmaker](https://github.com/svermeulen/nvim-moonmaker), and that we installed this first.  This is important to ensure that our moonscript vimrc is always automatically compiled into lua during startup.
+
+# Vimpeccable Command Syntax
+
+Vimpeccable mirrors the standard vim API and so has all the variations of `nnoremap`, `nmap`, `xnnoremap`, etc. that you probably are already familiar with.  See the following for some common vimL commands and their vimpeccable lua equivalents:
+
+As a reminder, the standard format to add a mapping in vimscript is:
+
+```
+[MODE](nore?)map [OPTIONS] [LHS] [RHS]
+```
+
+Where:
+- `MODE` can be one of `x`, `v`, `s`, `o`, `i`, `c`, `t`
+- `nore` is optional and determines whether the command is recursive or not
+- `OPTIONS` can be one or more options 
+
+Examples:
+
+```viml
+nnoremap <leader>hw :echo 'hello world'<cr>
+
+" Need to use recursive maps for plugs:
+nmap <leader>c <plug>Commentary
+xmap <leader>c <plug>Commentary
+
+nnoremap <expr> <silent> <leader>1 :call g:DoCustomThing()<cr>
+```
+
+Vimpeccable mirrors the above except that it is a lua method call and therefore requires that each parameter is seperated by commas:
+
+```
+vimp.[MODE](nore?)map [OPTIONS?], [LHS], [RHS]
+```
+
+Examples:
+
+```lua
+-- In lua we can represent strings either with quotes or with double square brackets
+vimp.nnoremap('<leader>hw', [[:echo 'hello world'<cr>]])
+
+vimp.nmap('<leader>c', '<plug>Commentary')
+vimp.xmap('<leader>c', '<plug>Commentary')
+
+-- Also note that we need to pass the options as a list instead of as seperate parameters
+-- Also note the options are not surrounded with angle brackets
+vimp.nnoremap({'expr', 'silent'}, '<leader>1', [[:call g:DoCustomThing()<cr>]])
+
+-- Or, alternatively, implement DoCustomThing in lua instead:
+vimp.nnoremap({'expr', 'silent'}, '<leader>1', function()
+    -- Add logic here
+end)
+```
+
+Vimpeccable also comes with extra methods named `bind` and `rbind` which allow passing the mode as a parameter instead of needing to use different methods:
+
+```lua
+vimp.bind 'n', '<leader>hw', [[:echo 'hello world'<cr>]]
+
+-- plugs need to use rbind
+vimp.rbind 'nx', '<leader>c', '<plug>Commentary'
+```
+
+This can be especially useful to allow binding multiple modes at the same time.
+
+Note also that you can pass multiple values for LHS like this:
+
+```
+vimp.rbind 'nx', {'<leader>c', 'gc'}, '<plug>Commentary'
+```
+
+Which in vimscript would require 4 different statements for each variation.
+
+# Vimpeccable Command Syntax
 
 
-To get started, 
-
-The example above is 
-
-Things to Document
 
 * Buffer local blocks
 
