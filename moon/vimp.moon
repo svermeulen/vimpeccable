@@ -9,7 +9,7 @@ CommandMapInfo = require("vimp.command_map_info")
 createVimpErrorWrapper = require("vimp.error_wrapper")
 UniqueTrie = require("vimp.unique_trie")
 
-ExtraOptions = { repeatable:true, force:true, buffer:true, chord:true }
+ExtraOptions = { repeatable:true, override:true, buffer:true, chord:true }
 
 Modes =
   normal: 'n',
@@ -88,8 +88,9 @@ class Vimp
     assert.that(modeMaps[map.lhs] != nil)
     modeMaps[map.lhs] = nil
 
-    success = trie\tryRemove(map.lhs)
-    assert.that(success)
+    if not map.extraOptions.chord
+      success = trie\tryRemove(map.lhs)
+      assert.that(success)
 
   _onBufferUnloaded: =>
     bufferHandle = tonumber(vim.fn.expand("<abuf>"))
@@ -277,7 +278,7 @@ class Vimp
     existingMap = modeMaps[map.lhs]
 
     if existingMap
-      assert.that(map.extraOptions.force,
+      assert.that(map.extraOptions.override,
         "Found duplicate mapping for keys '#{map.lhs}' in mode '#{map.mode}'.  Ignoring second attempt.  Current Mapping: #{existingMap\getRhsDisplayText!}, New Mapping: #{map\getRhsDisplayText!}")
 
       @\_removeMapping(existingMap)
@@ -330,9 +331,9 @@ class Vimp
       assert.that(bufferHandle == nil, "Do not specify <buffer> option when inside a call to vimp.addBufferMaps")
       bufferHandle = vim.api.nvim_get_current_buf()
 
-    assert.that(options.unique == nil, "The <unique> option is already on by default, and is disabled with the <force> option")
+    assert.that(options.unique == nil, "The <unique> option is already on by default, and is disabled with the <override> option")
 
-    if not extraOptions.force
+    if not extraOptions.override
       options.unique = true
 
     if extraOptions.repeatable
