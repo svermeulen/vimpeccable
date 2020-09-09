@@ -95,25 +95,7 @@ class Vimp
 
   _onBufferUnloaded: =>
     bufferHandle = tonumber(vim.fn.expand("<abuf>"))
-
-    -- Store it first since we are removing from _mapsById at the same time
-    bufferMaps = [x for k, x in pairs(@_mapsById) when x.bufferHandle == bufferHandle]
-
-    if #bufferMaps == 0
-      assert.that(@_bufferInfos[bufferHandle] == nil)
-      return
-
-    bufInfo = @_bufferInfos[bufferHandle]
-    assert.that(bufInfo)
-
-    count = 0
-    for map in *bufferMaps
-      @\_removeMapping(map)
-      count += 1
-
-    @_bufferInfos[bufferHandle] = nil
-
-    -- log.debug("Removed #{count} maps for #{bufferHandle}")
+    @\clearBufferMaps(bufferHandle)
 
   _generateNewMappingId: =>
     @_uniqueMapIdCount += 1
@@ -439,6 +421,26 @@ class Vimp
 
   nmap: (...) =>
     @\rbind('n', ...)
+
+  clearBufferMaps: (bufferHandle) =>
+    -- Store it first since we are removing from _mapsById at the same time
+    bufferMaps = [x for k, x in pairs(@_mapsById) when x.bufferHandle == bufferHandle]
+
+    if #bufferMaps == 0
+      assert.that(@_bufferInfos[bufferHandle] == nil)
+      return
+
+    bufInfo = @_bufferInfos[bufferHandle]
+    assert.that(bufInfo)
+
+    count = 0
+    for map in *bufferMaps
+      @\_removeMapping(map)
+      count += 1
+
+    @_bufferInfos[bufferHandle] = nil
+
+    -- log.debug("Removed #{count} maps for #{bufferHandle}")
 
   unmapAll: =>
     log.debug("Unmapping all maps")
