@@ -13,10 +13,11 @@ class log
 
   outputHandler: (message, level) ->
     fullMessage = "[vimp] #{log.levels.strings[level]}: #{message}\n"
-    if level == logLevels.error
-      vim.api.nvim_err_write(fullMessage)
-    else
-      vim.api.nvim_out_write(fullMessage)
+    -- We could write to nvim_err_write instead here, but this causes exceptions to be triggered in some cases
+    -- This can be especially bad for buffer local maps because it can make the file non-writable, since this
+    -- occurs during the ft change event
+    -- Better to just log the error to avoid bringing down the users entire config or to put vim in a bad state
+    vim.api.nvim_out_write(fullMessage)
 
   log: (message, level) ->
     if not log.isLevelEnabled(level)

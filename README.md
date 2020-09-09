@@ -27,3 +27,7 @@ Notes
 * Uses <unique> by default
 * map command does not support completion yet
 
+Things to document
+* <unique> is off by default for buffer maps
+
+

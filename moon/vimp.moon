@@ -23,12 +23,13 @@ Modes =
 AllModes = [v for _, v in pairs(Modes)]
 
 MapErrorStrategies =
-  logMessage: 1
-  logMinimalUserStackTrace: 2
-  logUserStackTrace: 3
-  logFullStackTrace: 4
-  rethrowMessage: 5
-  none: 6
+  silent: 1
+  logMessage: 2
+  logMinimalUserStackTrace: 3
+  logUserStackTrace: 4
+  logFullStackTrace: 5
+  rethrowMessage: 6
+  none: 7
 
 class Vimp
   new: =>
@@ -62,7 +63,7 @@ class Vimp
     return @_mapErrorHandlingStrategy
 
   _setMapErrorHandlingStrategy: (strategy) =>
-    assert.that(strategy >= 1 and strategy <= 6, "Invalid map error handling strategy '#{strategy}'")
+    assert.that(strategy >= 1 and strategy <= 7, "Invalid map error handling strategy '#{strategy}'")
     @_mapErrorHandlingStrategy = strategy
 
   _observeBufferUnload: =>
@@ -331,9 +332,10 @@ class Vimp
       assert.that(bufferHandle == nil, "Do not specify <buffer> option when inside a call to vimp.addBufferMaps")
       bufferHandle = vim.api.nvim_get_current_buf()
 
-    assert.that(options.unique == nil, "The <unique> option is already on by default, and is disabled with the <override> option")
-
-    if not extraOptions.override
+    -- Do not use <unique> for buffer maps because it's very common to override global maps with buffer ones
+    -- When extraOptions.override option is not provided, it will still make sure it doesn't collide with
+    --  other buffer local ones
+    if not extraOptions.override and bufferHandle == nil
       options.unique = true
 
     if extraOptions.repeatable

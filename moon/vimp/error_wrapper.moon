@@ -106,6 +106,12 @@ return ->
           log.error("Error when calling 'vimp.#{k}'#{getExtraContext(k, args)}: #{retValue}\n")
           return nil
 
+        if strategy == strategies.silent
+          success, retValue = pcall(action)
+          if success
+            return retValue
+          return nil
+
         assert.that(strategy == strategies.rethrowMessage)
 
         success, retValue = pcall(action)
