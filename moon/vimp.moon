@@ -8,6 +8,7 @@ MapInfo = require("vimp.map_info")
 CommandMapInfo = require("vimp.command_map_info")
 createVimpErrorWrapper = require("vimp.error_wrapper")
 UniqueTrie = require("vimp.unique_trie")
+FileLogStream = require("vimp.util.file_log_stream")
 
 ExtraOptions = { repeatable:true, override:true, buffer:true, chord:true }
 
@@ -40,36 +41,50 @@ class Vimp
     @_aliases = {}
     @_globalMapsByModeAndLhs = {}
     @_globalTrieByMode = {}
+    @_globalTrieByModeRaw = {}
     @_bufferInfos = {}
     @_mapErrorHandlingStrategy = MapErrorStrategies.logMinimalUserStackTrace
     @_bufferBlockHandle = nil
+    @_fileLogStream = nil
 
     for m in *AllModes
       @_globalMapsByModeAndLhs[m] = {}
       @_globalTrieByMode[m] = UniqueTrie()
+      @_globalTrieByModeRaw[m] = UniqueTrie()
 
     @\_observeBufferUnload!
+
+  enableFileLogging: (minLogLevel, logFilePath) =>
+    assert.that(@_fileLogStream == nil)
+    @_fileLogStream = FileLogStream()
+    @_fileLogStream\initialize(minLogLevel, logFilePath)
+    table.insert(log.streams, @_fileLogStream)
 
   -- Use var args to work with commands
   showAllMaps: (mode) =>
     @\showMaps('', mode)
 
+  _isCancellationMap: (map) =>
+    return map.rhs == '<nop>' and stringUtil.endsWith(map.lhs, '<esc>')
+
   showMaps: (prefix, mode) =>
     mode = mode or 'n'
     assert.that(tableUtil.contains(AllModes, mode),
-      "Invalid mode provided '#{mode}' provided")
+      "Invalid mode provided '#{mode}'")
     result = {}
     @_globalTrieByMode[mode]\visitSuffixes prefix, (suffix) ->
       mapping = @_globalMapsByModeAndLhs[mode][prefix .. suffix]
       sv.assert.that(mapping)
-      table.insert(result, mapping)
+      if not @\_isCancellationMap(mapping)
+        table.insert(result, mapping)
 
     bufInfo = @_bufferInfos[sv.vim.buffer.current!]
     if bufInfo
       bufInfo.triesByMode[mode]\visitSuffixes prefix, (suffix) ->
         mapping = bufInfo.mapsByModeAndLhs[mode][prefix .. suffix]
         sv.assert.that(mapping)
-        table.insert(result, mapping)
+        if not @\_isCancellationMap(mapping)
+          table.insert(result, mapping)
 
     output = "Maps for prefix '#{prefix}' (mode #{mode}):\n"
     if #result == 0
@@ -115,13 +130,16 @@ class Vimp
     map\removeFromVim!
     @_mapsById[map.id] = nil
 
-    modeMaps, trie = @\_getModeMapsAndTrie(map)
+    modeMaps, trie, trieRaw = @\_getModeMapsAndTrie(map)
 
     assert.that(modeMaps[map.lhs] != nil)
     modeMaps[map.lhs] = nil
 
     if not map.extraOptions.chord
       success = trie\tryRemove(map.lhs)
+      assert.that(success)
+
+      success = trieRaw\tryRemove(map.rawLhs)
       assert.that(success)
 
   _onBufferUnloaded: =>
@@ -266,13 +284,37 @@ class Vimp
     error("Map conflict found when attempting to add map:\n    #{map\toString!}\nConflicts:\n#{conflictOutput}")
 
   _newBufInfo: =>
-    bufInfo = {mapsByModeAndLhs: {}, triesByMode: {}}
+    bufInfo = {mapsByModeAndLhs: {}, triesByMode: {}, triesRawByMode: {}}
 
     for m in *AllModes
       bufInfo.mapsByModeAndLhs[m] = {}
       bufInfo.triesByMode[m] = UniqueTrie()
+      bufInfo.triesRawByMode[m] = UniqueTrie()
 
     return bufInfo
+
+  addChordCancellations: (mode, prefix) =>
+    assert.that(tableUtil.contains(AllModes, mode),
+      "Invalid mode provided to addChordCancellations '#{mode}'")
+    local trieRaw
+    if @_bufferBlockHandle != nil
+      bufInfo = @_bufferInfos[sv.vim.buffer.current!]
+      if bufInfo == nil
+        return
+      trieRaw = bufInfo.triesRawByMode[mode]
+    else
+      trieRaw = @_globalTrieByModeRaw[mode]
+    prefixRaw = vim.api.nvim_replace_termcodes(prefix, true, false, true)
+    escapeKey = '<esc>'
+    escapeKeyRaw = vim.api.nvim_replace_termcodes(escapeKey, true, false, true)
+
+    -- Note here that we have to use getAllBranches instead of visitBranches because
+    -- otherwise we get into an infinite loop
+    for suffix in *trieRaw\getAllBranches(prefixRaw)
+      -- This check might not be necessary but better to be safe
+      if not stringUtil.endsWith(suffix, escapeKey) and not stringUtil.endsWith(suffix, escapeKeyRaw)
+        -- Suffix here is raw but that should be ok
+        @\bind(mode, prefix .. suffix .. escapeKey, '<nop>')
 
   _getModeMapsAndTrie: (map) =>
     if map.bufferHandle != nil
@@ -282,12 +324,12 @@ class Vimp
         bufInfo = @\_newBufInfo!
         @_bufferInfos[map.bufferHandle] = bufInfo
 
-      return bufInfo.mapsByModeAndLhs[map.mode], bufInfo.triesByMode[map.mode]
+      return bufInfo.mapsByModeAndLhs[map.mode], bufInfo.triesByMode[map.mode], bufInfo.triesRawByMode[map.mode]
 
-    return @_globalMapsByModeAndLhs[map.mode], @_globalTrieByMode[map.mode]
+    return @_globalMapsByModeAndLhs[map.mode], @_globalTrieByMode[map.mode], @_globalTrieByModeRaw[map.mode]
 
   _addMapping: (map) =>
-    modeMaps, trie = @\_getModeMapsAndTrie(map)
+    modeMaps, trie, trieRaw = @\_getModeMapsAndTrie(map)
 
     existingMap = modeMaps[map.lhs]
 
@@ -322,6 +364,9 @@ class Vimp
 
     if shouldAddToTrie
       succeeded, existingPrefix, exactMatch = trie\tryAdd(map.lhs)
+      assert.that(succeeded)
+
+      succeeded, existingPrefix, exactMatch = trieRaw\tryAdd(map.rawLhs)
       assert.that(succeeded)
 
   _getAliases: =>
@@ -484,10 +529,12 @@ class Vimp
     for mode in *AllModes
       assert.that(#tableUtil.getKeys(@_globalMapsByModeAndLhs[mode]) == 0)
       assert.that(@_globalTrieByMode[mode]\isEmpty!)
+      assert.that(@_globalTrieByModeRaw[mode]\isEmpty!)
 
       for _, bufInfo in pairs(@_bufferInfos)
         assert.that(#tableUtil.getKeys(bufInfo.mapsByModeAndLhs[mode]) == 0)
         assert.that(bufInfo.triesByMode[mode]\isEmpty!)
+        assert.that(bufInfo.triesRawByMode[mode]\isEmpty!)
 
     assert.that(#@_mapsById == 0)
 

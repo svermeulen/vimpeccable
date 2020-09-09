@@ -50,6 +50,19 @@ class UniqueTrie
       result ..= string.char(c)
     return result
 
+  _visitBranches: (node, stack, callback) =>
+    for char, child in pairs(node)
+      table.insert(stack, char)
+      if next(child) != nil
+        callback(@\_convertBytesToString(stack))
+        @\_visitBranches(child, stack, callback)
+      table.remove(stack)
+
+  visitBranches: (prefix, callback) =>
+    node = @\_getSuffixNode(prefix)
+    if node != nil
+      @\_visitBranches(node, {}, callback)
+
   _visitSuffixes: (node, stack, callback) =>
     for char, child in pairs(node)
       table.insert(stack, char)
@@ -80,6 +93,12 @@ class UniqueTrie
 
   getAllEntries: =>
     return @\getAllSuffixes('')
+
+  getAllBranches: (prefix) =>
+    branches = {}
+    @\visitBranches prefix, (suffix) ->
+      table.insert(branches, suffix)
+    return branches
 
   getAllSuffixes: (prefix) =>
     suffixes = {}

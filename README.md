@@ -13,6 +13,7 @@ Features
 * Ability to map multiple keys at once
 * Support for key aliases
 * Context info for current map being executed
+* Chord cancellation maps
 
 Usage
 
