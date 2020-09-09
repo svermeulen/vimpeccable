@@ -56,7 +56,7 @@ vim.cmd('colorscheme gruvbox')
 require('vimp')
 
 -- Toggle line numbers
--- Note here that we are directly mapping a moonscript function directly
+-- Note here that we are directly mapping a moonscript function
 -- to the <leader>n keys
 vimp.nnoremap '<leader>n', -> vim.wo.number = not vim.wo.number
 
@@ -122,12 +122,13 @@ vim.cmd('colorscheme gruvbox')
 
 You can also use any other lua-based language such as Fennel, Teal, etc. in similar fashion.
 
-# Vimpeccable Features
+# Features / Table of Contents
 
-* Binding maps directly to a lua function
-* Hot reloading of entire config
-* Detection of duplicate maps
-* Detection of shadowed maps
+* Installation and Usage
+* Binding keys directly to a lua function
+* Easy hot reloading/unloading of entire config
+* Automatic detection of duplicate maps
+* Automatic detection of shadowed maps
 * Built in support to make any map repeatable
 * Better lua stack traces
 * Better error handling for lua maps
@@ -138,9 +139,40 @@ You can also use any other lua-based language such as Fennel, Teal, etc. in simi
 * Context info for current map being executed
 * Chord cancellation maps
 
-Usage
+# Installation and Usage
 
-TBD
+To use the example lua vimrc displayed above, you can start by changing your neovim `init.vim` file to the following:
+
+```vimL
+call plug#begin()
+Plug 'svermeulen/vimpeccable-lua-example'
+Plug 'svermeulen/vimpeccable'
+Plug 'morhetz/gruvbox'
+call plug#end()
+```
+
+For the purposes of this example we will use [vim-plug](https://github.com/junegunn/vim-plug) but you are of course free to use whichever plugin manager you prefer.
+
+Or, to use the moonscript vimrc displayed above instead, use this:
+
+```vimL
+call plug#begin()
+Plug 'svermeulen/nvim-moonmaker'
+Plug 'svermeulen/vimpeccable-moonscript-example'
+Plug 'svermeulen/vimpeccable'
+Plug 'morhetz/gruvbox'
+call plug#end()
+```
+
+In both cases, after adding this, open Neovim, execute `:PlugInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world')
+
+Note:
+- 
+
+
+To get started, 
+
+The example above is 
 
 Things to Document
 
