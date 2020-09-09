@@ -13,6 +13,7 @@ class CommandMapInfo
 
   _getNArgsFromHandler: =>
     handlerInfo = debug.getinfo(@handler)
+
     if handlerInfo.isvararg
       return '*'
 

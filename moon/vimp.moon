@@ -50,6 +50,37 @@ class Vimp
 
     @\_observeBufferUnload!
 
+  -- Use var args to work with commands
+  showAllMaps: (mode) =>
+    @\showMaps('', mode)
+
+  showMaps: (prefix, mode) =>
+    mode = mode or 'n'
+    assert.that(tableUtil.contains(AllModes, mode),
+      "Invalid mode provided '#{mode}' provided")
+    result = {}
+    @_globalTrieByMode[mode]\visitSuffixes prefix, (suffix) ->
+      mapping = @_globalMapsByModeAndLhs[mode][prefix .. suffix]
+      sv.assert.that(mapping)
+      table.insert(result, mapping)
+
+    bufInfo = @_bufferInfos[sv.vim.buffer.current!]
+    if bufInfo
+      bufInfo.triesByMode[mode]\visitSuffixes prefix, (suffix) ->
+        mapping = bufInfo.mapsByModeAndLhs[mode][prefix .. suffix]
+        sv.assert.that(mapping)
+        table.insert(result, mapping)
+
+    output = "Maps for prefix '#{prefix}' (mode #{mode}):\n"
+    if #result == 0
+      output ..= "<None>"
+    else
+      table.sort(result, (left, right) -> left.lhs < right.lhs)
+      for mapping in *result
+        action = mapping\getRhsDisplayText!
+        output ..= "#{mapping.lhs} -> #{action}\n"
+    vim.api.nvim_out_write(output .. '\n')
+
   _getCurrentMapInfo: =>
     return @_mapsInProgress[#@_mapsInProgress]
 

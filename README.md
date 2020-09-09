@@ -29,5 +29,6 @@ Notes
 
 Things to document
 * <unique> is off by default for buffer maps
+* showmaps and showAllMaps functions
 
 
