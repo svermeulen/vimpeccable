@@ -444,11 +444,11 @@ In some cases it might be better to define a custom action as a vim command rath
 
 ```viml
 function! g:OpenFileOnGithub()
-    " Open the URL on github for current file on current line
+    echom "Open the URL on github for current file on current line"
 endfunction
 
 function! g:RenameFile(newName)
-    " Rename current file
+    echom "Todo - rename current file to " . a:newName
 endfunction
 
 command! -nargs=0 SvOpenFileOnGithub call g:OpenFileOnGithub()
@@ -475,7 +475,7 @@ Or, if using [MoonScript](https://moonscript.org/):
 vimp.mapCommand 'SvOpenFileOnGithub', ->
   print("Todo - Open the URL on github for current file on current line")
 
-vimp.mapCommand 'SvRename', ->
+vimp.mapCommand 'SvRename', (newName) ->
   print("Todo - rename current file to " .. newName)
 ```
 
