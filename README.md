@@ -303,7 +303,7 @@ To test our new `<leader>r` reload mapping, try changing the `<leader>hw` mappin
 
 You might also notice that we have a new file inside our `~/.config/nvim/plugged/vimpeccable-lua-vimrc-advanced-example` directory at `/lua/vimrc/util.lua` that we are referencing above with the line `util = require('vimrc.util')`.  As your vimrc grows in complexity, you may want to split it up into multiple files, which we can do quite easily in lua by using the `require` method.
 
-Note that `util.lua` will also be reloaded every time we execute `<space>r`, as well as any other lua file underneath the `vimrc` folder.  See the comments above inside the `<leader>r` mapping for an explanation of whate each line does.
+Note that `util.lua` will also be reloaded every time we execute `<space>r`, as well as any other lua file underneath the `vimrc` folder.  See the comments above inside the `<leader>r` mapping for an explanation of what each line does.
 
 Note that an equivalent example for moonscript can also be found by using the following `init.vim` instead:
 
