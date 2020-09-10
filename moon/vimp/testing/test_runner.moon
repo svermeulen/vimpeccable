@@ -19,7 +19,7 @@ class TestRunner
     vim.cmd("b #{bufferHandle}")
     -- Always throw exceptions during testing
     vimp.mapErrorHandlingStrategy = vimp.mapErrorHandlingStrategies.none
-    -- log.enableFileLogging("debug", "~/Temp/vimpeccable.log")
+    assert.that(vim.o.hidden, "Must set hidden property to run tests")
 
     action = ->
       func!
@@ -28,8 +28,9 @@ class TestRunner
     success, retValue = xpcall(action, debug.traceback)
 
     vim.api.nvim_set_current_tabpage(testTab)
-    vim.cmd('tabclose')
-    vim.cmd("bd! #{bufferHandle}")
+    vim.cmd('tabclose!')
+    if vim.api.nvim_buf_is_loaded(bufferHandle)
+      vim.cmd("bd! #{bufferHandle}")
     vim.api.nvim_set_current_tabpage(startTab)
 
     -- Try this in case the error occurred during func!
@@ -44,14 +45,19 @@ class TestRunner
     if not success
       error(retValue, 2)
 
+  _initLogging: =>
+    -- vimp.enableFileLogging("debug", "~/Temp/vimpeccable.log")
+    vimp.printMinLogLevel = 'info'
+
   runTestFile: (filePath) =>
+    @\_initLogging!
     successCount = @\_runTestFile(filePath)
     log.info("#{successCount} tests completed successfully")
 
   _runTestFile: (filePath) =>
     testClass = dofile(filePath)
     tester = testClass!
-    log.debug("Executing tests for file #{filePath}...")
+    log.info("Executing tests for file #{filePath}...")
 
     successCount = 0
 
@@ -64,6 +70,7 @@ class TestRunner
     return successCount
 
   runTestMethod: (filePath, testName) =>
+    @\_initLogging!
     testClass = dofile(filePath)
     tester = testClass!
     log.info("Executing test '#{testName}' from file '#{filePath}'...")
@@ -72,6 +79,7 @@ class TestRunner
     log.info("Test #{testName} completed successfully")
 
   runAllTests: =>
+    @\_initLogging!
     testRoot = "#{@\_getPluginRootPath!}/lua"
 
     successCount = 0

@@ -4,16 +4,9 @@ local FileLogStream
 do
   local _class_0
   local _base_0 = {
-    _convertLogLevelStringToLevel = function(self, logLevelStr)
-      for i = 1, #log.levels.strings do
-        if logLevelStr == log.levels.strings[i] then
-          return i
-        end
-      end
-      return assert.that(false, "Invalid log level '" .. tostring(logLevelStr) .. "'")
-    end,
-    initialize = function(self, minLogLevelStr, logPath)
-      self._minLogLevel = self:_convertLogLevelStringToLevel(minLogLevelStr)
+    initialize = function(self, minLogLevel, logPath)
+      logPath = vim.fn.expand(logPath)
+      self._minLogLevel = minLogLevel
       assert.that(self._minLogLevel)
       local file = io.open(logPath, "a")
       assert.that(file, "Could not open log file '" .. tostring(logPath) .. "'")
@@ -21,14 +14,18 @@ do
       self._fileStream = file
       vim.cmd([[augroup vimpFileLogStream]])
       vim.cmd([[au!]])
-      vim.cmd([[au VimLeavePre * lua _vimp:_fileLogStream:dispose()]])
-      return vim.cmd([[augroup END]])
-    end,
-    dispose = function(self)
+      vim.cmd([[au VimLeavePre * lua _vimp._fileLogStream:dispose()]])
+      vim.cmd([[augroup END]])
+      self._fileStream:write("Log file initialized\n")
       return self._fileStream:flush()
     end,
+    dispose = function(self)
+      self._fileStream:write("Closing log file!\n")
+      self._fileStream:flush()
+      return self._fileStream:close()
+    end,
     log = function(self, message, level)
-      if self._minLogLevel >= level then
+      if level >= self._minLogLevel then
         return self._fileStream:write(tostring(log.levels.strings[level]) .. "\t" .. tostring(message) .. "\n")
       end
     end

@@ -44,14 +44,16 @@ do
   _base_0.__class = _class_0
   PrintLogStream = _class_0
 end
+local printLogStream = PrintLogStream()
 local log
 do
   local _class_0
   local _base_0 = {
     levels = LogLevels,
     streams = {
-      PrintLogStream()
+      printLogStream
     },
+    printLogStream = printLogStream,
     log = function(message, level)
       if message == nil then
         message = "nil"
@@ -75,6 +77,14 @@ do
     end,
     error = function(message)
       return log.log(message, LogLevels.error)
+    end,
+    convertLogLevelStringToLevel = function(logLevelStr)
+      for i = 1, #LogLevels.strings do
+        if logLevelStr == LogLevels.strings[i] then
+          return i
+        end
+      end
+      return error("Invalid log level '" .. tostring(logLevelStr) .. "'")
     end
   }
   _base_0.__index = _base_0

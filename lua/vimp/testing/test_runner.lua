@@ -30,6 +30,7 @@ do
       local bufferHandle = vim.api.nvim_create_buf(true, false)
       vim.cmd("b " .. tostring(bufferHandle))
       vimp.mapErrorHandlingStrategy = vimp.mapErrorHandlingStrategies.none
+      assert.that(vim.o.hidden, "Must set hidden property to run tests")
       local action
       action = function()
         func()
@@ -37,22 +38,28 @@ do
       end
       local success, retValue = xpcall(action, debug.traceback)
       vim.api.nvim_set_current_tabpage(testTab)
-      vim.cmd('tabclose')
-      vim.cmd("bd! " .. tostring(bufferHandle))
+      vim.cmd('tabclose!')
+      if vim.api.nvim_buf_is_loaded(bufferHandle) then
+        vim.cmd("bd! " .. tostring(bufferHandle))
+      end
       vim.api.nvim_set_current_tabpage(startTab)
       pcall(vimp.unmapAll)
       if not success then
         return error(retValue, 2)
       end
     end,
+    _initLogging = function(self)
+      vimp.printMinLogLevel = 'info'
+    end,
     runTestFile = function(self, filePath)
+      self:_initLogging()
       local successCount = self:_runTestFile(filePath)
       return log.info(tostring(successCount) .. " tests completed successfully")
     end,
     _runTestFile = function(self, filePath)
       local testClass = dofile(filePath)
       local tester = testClass()
-      log.debug("Executing tests for file " .. tostring(filePath) .. "...")
+      log.info("Executing tests for file " .. tostring(filePath) .. "...")
       local successCount = 0
       for methodName, func in pairs(getmetatable(tester)) do
         if stringUtil.startsWith(methodName, 'test') then
@@ -66,6 +73,7 @@ do
       return successCount
     end,
     runTestMethod = function(self, filePath, testName)
+      self:_initLogging()
       local testClass = dofile(filePath)
       local tester = testClass()
       log.info("Executing test '" .. tostring(testName) .. "' from file '" .. tostring(filePath) .. "'...")
@@ -75,6 +83,7 @@ do
       return log.info("Test " .. tostring(testName) .. " completed successfully")
     end,
     runAllTests = function(self)
+      self:_initLogging()
       local testRoot = tostring(self:_getPluginRootPath()) .. "/lua"
       local successCount = 0
       local _list_0 = vim.fn.globpath(testRoot, '**/test_*.lua', 0, 1)

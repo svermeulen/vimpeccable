@@ -46,10 +46,13 @@ local Vimp
 do
   local _class_0
   local _base_0 = {
+    _setPrintMinLogLevel = function(self, minLogLevel)
+      log.printLogStream.minLogLevel = log.convertLogLevelStringToLevel(minLogLevel)
+    end,
     enableFileLogging = function(self, minLogLevel, logFilePath)
       assert.that(self._fileLogStream == nil)
       self._fileLogStream = FileLogStream()
-      self._fileLogStream:initialize(minLogLevel, logFilePath)
+      self._fileLogStream:initialize(log.convertLogLevelStringToLevel(minLogLevel), logFilePath)
       return table.insert(log.streams, self._fileLogStream)
     end,
     showAllMaps = function(self, mode)
@@ -64,16 +67,16 @@ do
       local result = { }
       self._globalTrieByMode[mode]:visitSuffixes(prefix, function(suffix)
         local mapping = self._globalMapsByModeAndLhs[mode][prefix .. suffix]
-        sv.assert.that(mapping)
+        assert.that(mapping)
         if not self:_isCancellationMap(mapping) then
           return table.insert(result, mapping)
         end
       end)
-      local bufInfo = self._bufferInfos[sv.vim.buffer.current()]
+      local bufInfo = self._bufferInfos[vim.api.nvim_get_current_buf()]
       if bufInfo then
         bufInfo.triesByMode[mode]:visitSuffixes(prefix, function(suffix)
           local mapping = bufInfo.mapsByModeAndLhs[mode][prefix .. suffix]
-          sv.assert.that(mapping)
+          assert.that(mapping)
           if not self:_isCancellationMap(mapping) then
             return table.insert(result, mapping)
           end
@@ -298,7 +301,7 @@ do
       assert.that(tableUtil.contains(AllModes, mode), "Invalid mode provided to addChordCancellations '" .. tostring(mode) .. "'")
       local trieRaw
       if self._bufferBlockHandle ~= nil then
-        local bufInfo = self._bufferInfos[sv.vim.buffer.current()]
+        local bufInfo = self._bufferInfos[vim.api.nvim_get_current_buf()]
         if bufInfo == nil then
           return 
         end
@@ -526,8 +529,16 @@ do
       tableUtil.clear(self._aliases)
       return log.debug("Successfully unmapped " .. tostring(count) .. " maps")
     end,
-    addBufferMaps = function(self, bufferHandle, func)
-      assert.that(bufferHandle ~= nil)
+    addBufferMaps = function(self, arg1, arg2)
+      local bufferHandle, func
+      if arg2 == nil then
+        bufferHandle = vim.api.nvim_get_current_buf()
+        func = arg1
+      else
+        bufferHandle = arg1
+        func = arg2
+      end
+      assert.that(type(func) == 'function', "Unexpected parameter type given")
       assert.that(self._bufferBlockHandle == nil, "Already in a call to vimp.addBufferMaps!  Must exit this first before attempting another.")
       self._bufferBlockHandle = bufferHandle
       local ok, retVal = pcall(func)

@@ -38,6 +38,7 @@ return ->
   }
   _setters = {
     mapErrorHandlingStrategy: _vimp\_setMapErrorHandlingStrategy,
+    printMinLogLevel: _vimp\_setPrintMinLogLevel,
   }
 
   return setmetatable({}, {

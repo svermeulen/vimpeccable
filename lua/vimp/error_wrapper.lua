@@ -93,6 +93,13 @@ return function()
       return function(...)
         return _fn_0(_base_0, ...)
       end
+    end)(),
+    printMinLogLevel = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._setPrintMinLogLevel
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
     end)()
   }
   return setmetatable({ }, {

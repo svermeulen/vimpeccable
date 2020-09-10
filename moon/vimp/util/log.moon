@@ -20,9 +20,12 @@ class PrintLogStream
       vim.api.nvim_out_write(
         "[vimp] #{LogLevels.strings[level]}: #{message}\n")
 
+printLogStream = PrintLogStream()
+
 class log
   levels: LogLevels
-  streams: {PrintLogStream()}
+  streams: {printLogStream}
+  printLogStream: printLogStream
 
   log: (message, level) ->
     if message == nil
@@ -44,4 +47,10 @@ class log
 
   error: (message) ->
     log.log(message, LogLevels.error)
+
+  convertLogLevelStringToLevel: (logLevelStr) ->
+    for i=1,#LogLevels.strings
+      if logLevelStr == LogLevels.strings[i]
+        return i
+    error("Invalid log level '#{logLevelStr}'")
 
