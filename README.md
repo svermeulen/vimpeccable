@@ -430,6 +430,14 @@ end)
 
 For a full example, install `vimpeccable-lua-vimrc-advanced-example` as explained in the previous section, and then look at the files `/ftplugin/lua.vim` and `/lua/vimrc/ft/lua.lua`.
 
+Or, alternatively, in MoonScript instead of lua:
+
+```lua
+vimp.addBufferMaps ->
+  vimp.nnoremap '<leader>t1', -> print('lua map!')
+  vimp.nnoremap '<leader>t2', -> print('lua map two!')
+```
+
 ## User Command Maps
 
 In some cases it might be better to define a custom action as a vim command rather than mapping it to a key.  This way we don't use up any open key maps and our custom commands are discoverable on the command line by pressing tab (which can be easier than having to remember whatever leader map we chose). For example, you might want to define the following user commands in vimscript:
