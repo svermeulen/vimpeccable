@@ -119,10 +119,10 @@ class Vimp
   _observeBufferUnload: =>
     -- Note that we want to use BufUnload here and not BufDelete because BufDelete
     -- does not get triggered for unlisted buffers
-    vim.cmd [[augroup vimpBufWatch]]
-    vim.cmd [[au!]]
-    vim.cmd [[au BufUnload * lua _vimp:_onBufferUnloaded()]]
-    vim.cmd [[augroup END]]
+    vim.api.nvim_command [[augroup vimpBufWatch]]
+    vim.api.nvim_command [[au!]]
+    vim.api.nvim_command [[au BufUnload * lua _vimp:_onBufferUnloaded()]]
+    vim.api.nvim_command [[augroup END]]
 
   -- Note that this includes both buffer local maps and global maps
   _getTotalNumMaps: =>
@@ -147,7 +147,7 @@ class Vimp
       assert.that(success)
 
   _onBufferUnloaded: =>
-    bufferHandle = tonumber(vim.fn.expand("<abuf>"))
+    bufferHandle = tonumber(vim.api.nvim_call_function("expand", {"<abuf>"}))
     @\clearBufferMaps(bufferHandle)
 
   _generateNewMappingId: =>
@@ -247,7 +247,7 @@ class Vimp
 
     if map.extraOptions.repeatable
       assert.that(not map.options.expr)
-      vim.call('repeat#set', util.replaceSpecialChars(map.lhs))
+      vim.api.nvim_call_function('repeat#set', {util.replaceSpecialChars(map.lhs)})
 
     if map.options.expr
       -- This appears to be necessary even though I would expect

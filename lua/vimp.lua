@@ -114,10 +114,10 @@ do
       self._mapErrorHandlingStrategy = strategy
     end,
     _observeBufferUnload = function(self)
-      vim.cmd([[augroup vimpBufWatch]])
-      vim.cmd([[au!]])
-      vim.cmd([[au BufUnload * lua _vimp:_onBufferUnloaded()]])
-      return vim.cmd([[augroup END]])
+      vim.api.nvim_command([[augroup vimpBufWatch]])
+      vim.api.nvim_command([[au!]])
+      vim.api.nvim_command([[au BufUnload * lua _vimp:_onBufferUnloaded()]])
+      return vim.api.nvim_command([[augroup END]])
     end,
     _getTotalNumMaps = function(self)
       local keys = tableUtil.getKeys(self._mapsById)
@@ -137,7 +137,9 @@ do
       end
     end,
     _onBufferUnloaded = function(self)
-      local bufferHandle = tonumber(vim.fn.expand("<abuf>"))
+      local bufferHandle = tonumber(vim.api.nvim_call_function("expand", {
+        "<abuf>"
+      }))
       return self:clearBufferMaps(bufferHandle)
     end,
     _generateNewMappingId = function(self)
@@ -244,7 +246,9 @@ do
       end
       if map.extraOptions.repeatable then
         assert.that(not map.options.expr)
-        vim.call('repeat#set', util.replaceSpecialChars(map.lhs))
+        vim.api.nvim_call_function('repeat#set', {
+          util.replaceSpecialChars(map.lhs)
+        })
       end
       if map.options.expr then
         return util.replaceSpecialChars(result)

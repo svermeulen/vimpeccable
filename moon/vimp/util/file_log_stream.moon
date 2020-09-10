@@ -15,10 +15,10 @@ class FileLogStream
     file\setvbuf("line")
     @_fileStream = file
 
-    vim.cmd [[augroup vimpFileLogStream]]
-    vim.cmd [[au!]]
-    vim.cmd [[au VimLeavePre * lua _vimp._fileLogStream:dispose()]]
-    vim.cmd [[augroup END]]
+    vim.api.nvim_command [[augroup vimpFileLogStream]]
+    vim.api.nvim_command [[au!]]
+    vim.api.nvim_command [[au VimLeavePre * lua _vimp._fileLogStream:dispose()]]
+    vim.api.nvim_command [[augroup END]]
 
     @_fileStream\write("Log file initialized\n")
     @_fileStream\flush!

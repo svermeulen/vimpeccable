@@ -5,7 +5,7 @@ do
   local _class_0
   local _base_0 = {
     removeFromVim = function(self)
-      return vim.cmd("delcommand " .. tostring(self.name))
+      return vim.api.nvim_command("delcommand " .. tostring(self.name))
     end,
     _getNArgsFromHandler = function(self)
       local handlerInfo = debug.getinfo(self.handler)
@@ -32,7 +32,7 @@ do
     end,
     addToVim = function(self)
       local commandStr = self:_createCommandStr()
-      return vim.cmd(commandStr)
+      return vim.api.nvim_command(commandStr)
     end
   }
   _base_0.__index = _base_0

@@ -9,7 +9,7 @@ class CommandMapInfo
     @name = name
 
   removeFromVim: =>
-    vim.cmd("delcommand #{@name}")
+    vim.api.nvim_command("delcommand #{@name}")
 
   _getNArgsFromHandler: =>
     handlerInfo = debug.getinfo(@handler)
@@ -39,4 +39,4 @@ class CommandMapInfo
   addToVim: =>
     commandStr = @\_createCommandStr!
     -- log.debug("Adding command: #{commandStr}")
-    vim.cmd(commandStr)
+    vim.api.nvim_command(commandStr)
