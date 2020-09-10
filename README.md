@@ -5,7 +5,7 @@
 
 Vimpeccable is a plugin for Neovim that allows you to easily replace your vimscript-based `.vimrc` with a lua-based one instead.  Vimpeccable adds to the existing Neovim lua API by adding new lua commands to easily map keys directly to lua.
 
-NOTE: We recommend using the latest [development preview](https://github.com/neovim/neovim/releases/nightly) release of Neovim.  While the core functionality of this plugin is compatible with the current Neovim stable release, note that the example configs shown here are not.
+NOTE: We recommend using the latest [development preview](https://github.com/neovim/neovim/releases/nightly) release of Neovim.  While the core functionality of this plugin is compatible with the current Neovim stable release, the example vimrcs shown in this documentation are not.
 
 ## Table of Contents
 
