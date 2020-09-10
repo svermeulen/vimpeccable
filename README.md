@@ -271,7 +271,7 @@ Plug 'morhetz/gruvbox'
 call plug#end()
 ```
 
-Here, we're using the `vimpeccable-lua-vimrc-advanced-example` plugin, which contains a map to reload our vimrc.  After replacing your `init.vim` with the above, if you then open nvim and press `<space>ev` you should see the following vimrc file:
+Here, we're using the `vimpeccable-lua-vimrc-advanced-example` plugin, which contains a map to reload our vimrc.  After replacing your `init.vim` with the above, if you then open nvim, run `:PlugInstall` and then press `<space>ev` you should see the following vimrc file:
 
 ```lua
 require('vimp')
