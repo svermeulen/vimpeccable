@@ -289,7 +289,7 @@ vimp.nnoremap('<leader>r', function()
   -- it will reload the file
   -- By default, require() will only load the lua file the first time it is called and thereafter
   -- pull it from a cache
-  util.unloadLuaNamespace('vimrc')
+  util.unload_lua_namespace('vimrc')
   -- Make sure all open buffers are saved
   vim.cmd('silent wa')
   -- Execute our vimrc lua file again to add back our maps
