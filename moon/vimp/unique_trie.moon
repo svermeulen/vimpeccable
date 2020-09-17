@@ -11,10 +11,10 @@ class UniqueTrie
   new: =>
     @root = {}
 
-  isEmpty: =>
+  is_empty: =>
     return next(@root) == nil
 
-  _tryRemove: (node, index, data) =>
+  _try_remove: (node, index, data) =>
     c = data\byte(index)
     child = node[c]
 
@@ -25,12 +25,12 @@ class UniqueTrie
       -- Cannot remove because there's entries that have the given string as a prefix
       if next(child) != nil
         return false
-        
+
       -- There is nothing after this so can remove
       node[c] = nil
       return true
 
-    success = @\_tryRemove(child, index + 1, data)
+    success = @\_try_remove(child, index + 1, data)
 
     if not success
       return false
@@ -41,38 +41,38 @@ class UniqueTrie
 
     return success
 
-  tryRemove: (data) =>
-    return @\_tryRemove(@root, 1, data)
+  try_remove: (data) =>
+    return @\_try_remove(@root, 1, data)
 
-  _convertBytesToString: (bytes) =>
+  _convert_bytes_to_string: (bytes) =>
     result = ''
     for c in *bytes
       result ..= string.char(c)
     return result
 
-  _visitBranches: (node, stack, callback) =>
+  _visit_branches: (node, stack, callback) =>
     for char, child in pairs(node)
       table.insert(stack, char)
       if next(child) != nil
-        callback(@\_convertBytesToString(stack))
-        @\_visitBranches(child, stack, callback)
+        callback(@\_convert_bytes_to_string(stack))
+        @\_visit_branches(child, stack, callback)
       table.remove(stack)
 
-  visitBranches: (prefix, callback) =>
-    node = @\_getSuffixNode(prefix)
+  visit_branches: (prefix, callback) =>
+    node = @\_get_suffix_node(prefix)
     if node != nil
-      @\_visitBranches(node, {}, callback)
+      @\_visit_branches(node, {}, callback)
 
   _visitSuffixes: (node, stack, callback) =>
     for char, child in pairs(node)
       table.insert(stack, char)
       if next(child) == nil
-        callback(@\_convertBytesToString(stack))
+        callback(@\_convert_bytes_to_string(stack))
       else
         @\_visitSuffixes(child, stack, callback)
       table.remove(stack)
 
-  _getSuffixNode: (prefix) =>
+  _get_suffix_node: (prefix) =>
     currentNode = @root
 
     for i=1,#prefix
@@ -86,30 +86,30 @@ class UniqueTrie
 
     return currentNode
 
-  visitSuffixes: (prefix, callback) =>
-    node = @\_getSuffixNode(prefix)
+  visit_suffixes: (prefix, callback) =>
+    node = @\_get_suffix_node(prefix)
     if node != nil
       @\_visitSuffixes(node, {}, callback)
 
-  getAllEntries: =>
-    return @\getAllSuffixes('')
+  get_all_entries: =>
+    return @\get_all_suffixes('')
 
-  getAllBranches: (prefix) =>
+  get_all_branches: (prefix) =>
     branches = {}
-    @\visitBranches prefix, (suffix) ->
+    @\visit_branches prefix, (suffix) ->
       table.insert(branches, suffix)
     return branches
 
-  getAllSuffixes: (prefix) =>
+  get_all_suffixes: (prefix) =>
     suffixes = {}
-    @\visitSuffixes prefix, (suffix) ->
+    @\visit_suffixes prefix, (suffix) ->
       table.insert(suffixes, suffix)
     return suffixes
 
   -- Adds the data to the trie
   -- Returns 0 on success, and otherwise returns the index
   -- where the conflict was encountered
-  tryAdd: (data, dryRun) =>
+  try_add: (data, dryRun) =>
     currentNode = @root
     isNew = false
 

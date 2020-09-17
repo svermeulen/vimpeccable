@@ -2,14 +2,14 @@ local Util
 do
   local _class_0
   local _base_0 = {
-    replaceSpecialChars = function(str)
+    replace_special_chars = function(str)
       return vim.api.nvim_replace_termcodes(str, true, false, true)
     end,
-    normalBang = function(keys)
-      return vim.api.nvim_feedkeys(Util.replaceSpecialChars(keys), 'nx', true)
+    normal_bang = function(keys)
+      return vim.api.nvim_feedkeys(Util.replace_special_chars(keys), 'nx', true)
     end,
     rnormal = function(keys)
-      return vim.api.nvim_feedkeys(Util.replaceSpecialChars(keys), 'mx', true)
+      return vim.api.nvim_feedkeys(Util.replace_special_chars(keys), 'mx', true)
     end
   }
   _base_0.__index = _base_0

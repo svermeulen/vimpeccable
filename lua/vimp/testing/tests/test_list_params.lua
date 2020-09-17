@@ -8,38 +8,38 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testMultipleLhs = function(self)
+    test_multiple_lhs = function(self)
       helpers.unlet('foo')
       vimp.nnoremap({
         TestKeys1,
         TestKeys2
       }, [[:let g:foo = 5<cr>]])
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys1)
-      assert.isEqual(vim.g.foo, 5)
+      assert.is_equal(vim.g.foo, 5)
       helpers.unlet('foo')
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys2)
-      return assert.isEqual(vim.g.foo, 5)
+      return assert.is_equal(vim.g.foo, 5)
     end,
-    testMultipleModes = function(self)
+    test_multiple_modes = function(self)
       vimp.bind('nx', {
         TestKeys1,
         TestKeys2
       }, '<right>')
-      helpers.setLines({
+      helpers.set_lines({
         "abc def"
       })
       helpers.input('0')
       helpers.rinput(TestKeys1)
-      assert.isEqual(helpers.getCursorCharacter(), 'b')
+      assert.is_equal(helpers.get_cursor_character(), 'b')
       helpers.rinput(TestKeys2)
-      assert.isEqual(helpers.getCursorCharacter(), 'c')
+      assert.is_equal(helpers.get_cursor_character(), 'c')
       helpers.input("0v")
       helpers.rinput(TestKeys1)
       helpers.rinput(TestKeys2)
       helpers.input("d")
-      return assert.isEqual(helpers.getLine(), ' def')
+      return assert.is_equal(helpers.get_line(), ' def')
     end
   }
   _base_0.__index = _base_0

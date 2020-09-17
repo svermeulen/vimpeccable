@@ -8,59 +8,59 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testKeyMap = function(self)
+    test_key_map = function(self)
       vimp.nnoremap({
         'repeatable'
       }, TestKeys, 'dlldl')
-      helpers.setLines({
+      helpers.set_lines({
         "foo bar"
       })
       helpers.input("0w")
       helpers.rinput(TestKeys)
-      assert.isEqual(helpers.getLine(), 'foo a')
+      assert.is_equal(helpers.get_line(), 'foo a')
       helpers.input("0")
       helpers.rinput('.')
-      return assert.isEqual(helpers.getLine(), 'o a')
+      return assert.is_equal(helpers.get_line(), 'o a')
     end,
-    testKeyMapRecursive = function(self)
+    test_key_map_recursive = function(self)
       vimp.nnoremap(TestKeys2, 'dlldl')
       vimp.nmap({
         'repeatable'
       }, TestKeys, TestKeys2)
-      helpers.setLines({
+      helpers.set_lines({
         "foo bar"
       })
       helpers.input("0w")
       helpers.rinput(TestKeys)
-      assert.isEqual(helpers.getLine(), 'foo a')
+      assert.is_equal(helpers.get_line(), 'foo a')
       helpers.input("0")
       helpers.rinput('.')
-      return assert.isEqual(helpers.getLine(), 'o a')
+      return assert.is_equal(helpers.get_line(), 'o a')
     end,
-    testWrongMode = function(self)
+    test_wrong_mode = function(self)
       return assert.throws("currently only supported", function()
         return vimp.inoremap({
           'repeatable'
         }, TestKeys, 'foo')
       end)
     end,
-    testLuaFunc = function(self)
+    test_lua_func = function(self)
       vimp.nnoremap({
         'repeatable'
       }, TestKeys, function()
         return vim.cmd('normal! dlldl')
       end)
-      helpers.setLines({
+      helpers.set_lines({
         "foo bar"
       })
       helpers.input("0w")
       helpers.rinput(TestKeys)
-      assert.isEqual(helpers.getLine(), 'foo a')
+      assert.is_equal(helpers.get_line(), 'foo a')
       helpers.input("0")
       helpers.rinput('.')
-      return assert.isEqual(helpers.getLine(), 'o a')
+      return assert.is_equal(helpers.get_line(), 'o a')
     end,
-    testLuaFuncExpr = function(self)
+    test_lua_func_expr = function(self)
       return assert.throws("currently not supported", function()
         return vimp.nnoremap({
           'repeatable',

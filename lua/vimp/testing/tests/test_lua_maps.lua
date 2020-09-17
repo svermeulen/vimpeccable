@@ -8,7 +8,7 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testNnoremap = function(self)
+    test_nnoremap = function(self)
       local received = false
       vimp.nnoremap(TestKeys, function()
         received = true
@@ -17,17 +17,17 @@ do
       helpers.rinput(TestKeys)
       return assert.that(received)
     end,
-    testInoremap = function(self)
+    test_inoremap = function(self)
       local received = false
       vimp.inoremap(TestKeys, function()
         received = true
       end)
       assert.that(not received)
       helpers.rinput("i" .. tostring(TestKeys) .. "foo")
-      assert.isEqual(helpers.getLine(), 'foo')
+      assert.is_equal(helpers.get_line(), 'foo')
       return assert.that(received)
     end,
-    testXnoremap = function(self)
+    test_xnoremap = function(self)
       local received = false
       vimp.xnoremap(TestKeys, function()
         helpers.input("iw")
@@ -37,10 +37,10 @@ do
       helpers.input("istart middle end<esc>Fmv")
       helpers.rinput(TestKeys)
       helpers.input("cfoo<esc>")
-      assert.isEqual(helpers.getLine(), 'start foo end')
+      assert.is_equal(helpers.get_line(), 'start foo end')
       return assert.that(received)
     end,
-    testSnoremap = function(self)
+    test_snoremap = function(self)
       local received = false
       vimp.snoremap(TestKeys, function()
         received = true
@@ -50,10 +50,10 @@ do
       helpers.input("gh<right><right>")
       helpers.rinput(TestKeys)
       helpers.input("foo")
-      assert.isEqual(helpers.getLine(), 'start foo end')
+      assert.is_equal(helpers.get_line(), 'start foo end')
       return assert.that(received)
     end,
-    testCnoremap = function(self)
+    test_cnoremap = function(self)
       return assert.throws('not currently supported', function()
         local received = false
         return vimp.cnoremap(TestKeys, function()
@@ -61,7 +61,7 @@ do
         end)
       end)
     end,
-    testOnoremap = function(self)
+    test_onoremap = function(self)
       local received = false
       vimp.onoremap(TestKeys, function()
         helpers.input("viw")
@@ -70,10 +70,10 @@ do
       assert.that(not received)
       helpers.input("istart middle end<esc>Fm")
       helpers.rinput("d" .. tostring(TestKeys))
-      assert.isEqual(helpers.getLine(), 'start  end')
+      assert.is_equal(helpers.get_line(), 'start  end')
       return assert.that(received)
     end,
-    testTnoremap = function(self)
+    test_tnoremap = function(self)
       return assert.throws('not currently supported', function()
         local received = false
         return vimp.tnoremap(TestKeys, function()
@@ -81,37 +81,37 @@ do
         end)
       end)
     end,
-    testNmap = function(self)
+    test_nmap = function(self)
       return assert.throws("Cannot use recursive", function()
         return vimp.nmap(TestKeys, function() end)
       end)
     end,
-    testImap = function(self)
+    test_imap = function(self)
       return assert.throws("Cannot use recursive", function()
         return vimp.imap(TestKeys, function() end)
       end)
     end,
-    testXmap = function(self)
+    test_xmap = function(self)
       return assert.throws("Cannot use recursive", function()
         return vimp.xmap(TestKeys, function() end)
       end)
     end,
-    testSmap = function(self)
+    test_smap = function(self)
       return assert.throws("Cannot use recursive", function()
         return vimp.smap(TestKeys, function() end)
       end)
     end,
-    testCmap = function(self)
+    test_cmap = function(self)
       return assert.throws("not currently supported", function()
         return vimp.cmap(TestKeys, function() end)
       end)
     end,
-    testOmap = function(self)
+    test_omap = function(self)
       return assert.throws("recursive mapping", function()
         return vimp.omap(TestKeys, function() end)
       end)
     end,
-    testTmap = function(self)
+    test_tmap = function(self)
       return assert.throws("not currently supported", function()
         return vimp.tmap(TestKeys, function() end)
       end)

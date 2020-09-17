@@ -9,27 +9,27 @@ TestKeys1 = '<F4>'
 TestKeys2 = '<F5>'
 
 class Tester
-  testMultipleLhs: =>
+  test_multiple_lhs: =>
     helpers.unlet('foo')
     vimp.nnoremap { TestKeys1, TestKeys2 }, [[:let g:foo = 5<cr>]]
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys1)
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)
     helpers.unlet('foo')
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys2)
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)
 
-  testMultipleModes: =>
+  test_multiple_modes: =>
     vimp.bind 'nx', { TestKeys1, TestKeys2 }, '<right>'
-    helpers.setLines({"abc def"})
+    helpers.set_lines({"abc def"})
     helpers.input('0')
     helpers.rinput(TestKeys1)
-    assert.isEqual(helpers.getCursorCharacter!, 'b')
+    assert.is_equal(helpers.get_cursor_character!, 'b')
     helpers.rinput(TestKeys2)
-    assert.isEqual(helpers.getCursorCharacter!, 'c')
+    assert.is_equal(helpers.get_cursor_character!, 'c')
     helpers.input("0v")
     helpers.rinput(TestKeys1)
     helpers.rinput(TestKeys2)
     helpers.input("d")
-    assert.isEqual(helpers.getLine!, ' def')
+    assert.is_equal(helpers.get_line!, ' def')

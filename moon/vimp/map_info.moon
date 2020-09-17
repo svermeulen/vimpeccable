@@ -2,18 +2,18 @@
 assert = require("vimp.util.assert")
 
 class MapInfo
-  new: (id, mode, options, extraOptions, lhs, expandedLhs, rawLhs, rhs, bufferHandle) =>
+  new: (id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle) =>
     @id = id
     @lhs = lhs
-    @expandedLhs = expandedLhs
-    @rawLhs = rawLhs
+    @expanded_lhs = expanded_lhs
+    @raw_lhs = raw_lhs
     @rhs = rhs
     @options = options
-    @extraOptions = extraOptions
+    @extra_options = extra_options
     @mode = mode
-    @bufferHandle = bufferHandle
+    @buffer_handle = buffer_handle
 
-  _getActualRhs: =>
+  _get_actual_rhs: =>
     if type(@rhs) == 'string'
       return @rhs
 
@@ -42,26 +42,26 @@ class MapInfo
     -- This should work for normal, visual, and operation mode
     return ":<c-u>lua _vimp:_executeMap(#{@id})<cr>"
 
-  getRhsDisplayText: =>
+  get_rhs_display_text: =>
     if type(@rhs) == 'string'
       return @rhs
 
     assert.that(type(@rhs) == 'function')
     return "<lua function #{@id}>"
 
-  addToVim: =>
-    actualRhs = @\_getActualRhs!
-    if @bufferHandle != nil
-      vim.api.nvim_buf_set_keymap(@bufferHandle, @mode, @expandedLhs, actualRhs, @options)
+  add_to_vim: =>
+    actualRhs = @\_get_actual_rhs!
+    if @buffer_handle != nil
+      vim.api.nvim_buf_set_keymap(@buffer_handle, @mode, @expanded_lhs, actualRhs, @options)
     else
-      vim.api.nvim_set_keymap(@mode, @expandedLhs, actualRhs, @options)
+      vim.api.nvim_set_keymap(@mode, @expanded_lhs, actualRhs, @options)
 
-  removeFromVim: =>
-    if @bufferHandle != nil
-      vim.api.nvim_buf_del_keymap(@bufferHandle, @mode, @expandedLhs)
+  remove_from_vim: =>
+    if @buffer_handle != nil
+      vim.api.nvim_buf_del_keymap(@buffer_handle, @mode, @expanded_lhs)
     else
-      vim.api.nvim_del_keymap(@mode, @expandedLhs)
+      vim.api.nvim_del_keymap(@mode, @expanded_lhs)
 
-  toString: =>
-    return "'#{@lhs}' -> '#{@\getRhsDisplayText!}'"
+  to_string: =>
+    return "'#{@lhs}' -> '#{@\get_rhs_display_text!}'"
 

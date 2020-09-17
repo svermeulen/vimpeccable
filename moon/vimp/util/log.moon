@@ -9,10 +9,10 @@ LogLevels =
 
 class PrintLogStream
   new: =>
-    @minLogLevel = LogLevels.warning
+    @min_log_level = LogLevels.warning
 
   log: (message, level) =>
-    if level >= @minLogLevel
+    if level >= @min_log_level
       -- We could write to nvim_err_write instead here, but this causes exceptions to be triggered in some cases
       -- This can be especially bad for buffer local maps because it can make the file non-writable, since this
       -- occurs during the ft change event
@@ -20,12 +20,12 @@ class PrintLogStream
       vim.api.nvim_out_write(
         "[vimp] #{LogLevels.strings[level]}: #{message}\n")
 
-printLogStream = PrintLogStream()
+print_log_stream = PrintLogStream()
 
 class log
   levels: LogLevels
-  streams: {printLogStream}
-  printLogStream: printLogStream
+  streams: {print_log_stream}
+  print_log_stream: print_log_stream
 
   log: (message, level) ->
     if message == nil
@@ -48,9 +48,9 @@ class log
   error: (message) ->
     log.log(message, LogLevels.error)
 
-  convertLogLevelStringToLevel: (logLevelStr) ->
+  convert_log_level_string_to_level: (log_level_str) ->
     for i=1,#LogLevels.strings
-      if logLevelStr == LogLevels.strings[i]
+      if log_level_str == LogLevels.strings[i]
         return i
-    error("Invalid log level '#{logLevelStr}'")
+    error("Invalid log level '#{log_level_str}'")
 

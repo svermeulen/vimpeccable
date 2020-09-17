@@ -3,7 +3,7 @@ class String
   startsWith: (value, prefix) ->
     value\sub(1, #prefix) == prefix
 
-  endsWith: (value, suffix) ->
+  ends_with: (value, suffix) ->
     value\sub(#value + 1 - #suffix) == suffix
 
   split: (value, sep) ->
@@ -17,10 +17,10 @@ class String
       result ..= tostring(item)
     return result
 
-  charAt: (value, index) ->
+  char_at: (value, index) ->
     return value\sub(index, index)
 
-  _addEscapeChars: (value) ->
+  _add_escape_chars: (value) ->
     -- gsub is not ideal in cases where we want to do a literal
     -- replace, so to do this just escape all special characters with '%'
     value = value\gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%0")
@@ -28,10 +28,10 @@ class String
     -- forwarding the multiple return values causing subtle errors
     return value
 
-  indexOf: (haystack, needle) ->
-    result = haystack\find(String._addEscapeChars(needle))
+  index_of: (haystack, needle) ->
+    result = haystack\find(String._add_escape_chars(needle))
     return result
 
   replace: (value, old, new) ->
-    return value\gsub(String._addEscapeChars(old), new)
+    return value\gsub(String._add_escape_chars(old), new)
 

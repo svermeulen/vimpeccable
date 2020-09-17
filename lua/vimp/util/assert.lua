@@ -11,21 +11,21 @@ do
         end
       end
     end,
-    isClassInstance = function(instance, classTable)
-      return assert.isEqual(instance.__class, classTable)
+    is_class_instance = function(instance, class_table)
+      return assert.is_equal(instance.__class, class_table)
     end,
     throw = function()
       return error("Assert hit!")
     end,
-    throws = function(errorPattern, action)
-      local ok, errorStr = pcall(action)
+    throws = function(error_pattern, action)
+      local ok, error_str = pcall(action)
       assert.that(not ok, 'Expected exception but instead nothing was thrown')
-      return assert.that(errorStr:find(errorPattern) ~= nil, "Unexpected error message!  Expected '" .. tostring(errorPattern) .. "' but found:\n" .. tostring(errorStr))
+      return assert.that(error_str:find(error_pattern) ~= nil, "Unexpected error message!  Expected '" .. tostring(error_pattern) .. "' but found:\n" .. tostring(error_str))
     end,
-    isEqual = function(left, right)
+    is_equal = function(left, right)
       return assert.that(left == right, "Expected '" .. tostring(left) .. "' to be equal to '" .. tostring(right) .. "'")
     end,
-    isNotEqual = function(left, right)
+    is_not_equal = function(left, right)
       return assert.that(left ~= right, "Expected '" .. tostring(left) .. "' to not be equal to '" .. tostring(right) .. "'")
     end
   }

@@ -1,89 +1,89 @@
 
 require('vimp')
-stringUtil = require('vimp.util.string')
+string_util = require('vimp.util.string')
 assert = require("vimp.util.assert")
 log = require("vimp.util.log")
 util = require("vimp.util.util")
 
 class TestRunner
-  _getPluginRootPath: =>
-    matches = [x for x in string.gmatch(vim.api.nvim_eval('&rtp'), "([^,]+)") when stringUtil.endsWith(x, '/vimpeccable')]
+  _get_plugin_root_path: =>
+    matches = [x for x in string.gmatch(vim.api.nvim_eval('&rtp'), "([^,]+)") when string_util.ends_with(x, '/vimpeccable')]
     assert.that(#matches == 1)
     return matches[1]
 
-  _runTestFunc: (func) =>
-    startTab = vim.api.nvim_get_current_tabpage()
-    vim.cmd('normal! ' .. util.replaceSpecialChars("<c-w>v<c-w>T"))
-    testTab = vim.api.nvim_get_current_tabpage()
-    bufferHandle = vim.api.nvim_create_buf(true, false)
-    vim.cmd("b #{bufferHandle}")
+  _run_test_func: (func) =>
+    start_tab = vim.api.nvim_get_current_tabpage()
+    vim.cmd('normal! ' .. util.replace_special_chars("<c-w>v<c-w>T"))
+    test_tab = vim.api.nvim_get_current_tabpage()
+    buffer_handle = vim.api.nvim_create_buf(true, false)
+    vim.cmd("b #{buffer_handle}")
     -- Always throw exceptions during testing
-    vimp.mapErrorHandlingStrategy = vimp.mapErrorHandlingStrategies.none
+    vimp.map_error_handling_strategy = vimp.map_error_handling_strategies.none
     assert.that(vim.o.hidden, "Must set hidden property to run tests")
 
     action = ->
       func!
-      vimp.unmapAll!
+      vimp.unmap_all!
 
-    success, retValue = xpcall(action, debug.traceback)
+    success, ret_value = xpcall(action, debug.traceback)
 
-    vim.api.nvim_set_current_tabpage(testTab)
+    vim.api.nvim_set_current_tabpage(test_tab)
     vim.cmd('tabclose!')
-    if vim.api.nvim_buf_is_loaded(bufferHandle)
-      vim.cmd("bd! #{bufferHandle}")
-    vim.api.nvim_set_current_tabpage(startTab)
+    if vim.api.nvim_buf_is_loaded(buffer_handle)
+      vim.cmd("bd! #{buffer_handle}")
+    vim.api.nvim_set_current_tabpage(start_tab)
 
     -- Try this in case the error occurred during func!
     -- And just ignore any errors that occur
     -- We don't _just_ do this because we want the error from
-    -- unmapAll to propagate if it gets that far
+    -- unmap_all to propagate if it gets that far
     -- This is nice because it will remove the maps from vim
     -- so we might not need to do a full restart to avoid getting
     -- errors if we run the tests again
-    pcall(vimp.unmapAll)
+    pcall(vimp.unmap_all)
 
     if not success
-      error(retValue, 2)
+      error(ret_value, 2)
 
-  _initLogging: =>
-    -- vimp.enableFileLogging("debug", "~/Temp/vimpeccable.log")
-    vimp.printMinLogLevel = 'info'
+  _init_logging: =>
+    -- vimp.enable_file_logging("debug", "~/Temp/vimpeccable.log")
+    vimp.print_min_log_level = 'info'
 
-  runTestFile: (filePath) =>
-    @\_initLogging!
-    successCount = @\_runTestFile(filePath)
-    log.info("#{successCount} tests completed successfully")
+  run_test_file: (file_path) =>
+    @\_init_logging!
+    success_count = @\_run_test_file(file_path)
+    log.info("#{success_count} tests completed successfully")
 
-  _runTestFile: (filePath) =>
-    testClass = dofile(filePath)
-    tester = testClass!
-    log.info("Executing tests for file #{filePath}...")
+  _run_test_file: (file_path) =>
+    test_class = dofile(file_path)
+    tester = test_class!
+    log.info("Executing tests for file #{file_path}...")
 
-    successCount = 0
+    success_count = 0
 
     for methodName,func in pairs(getmetatable(tester))
-      if stringUtil.startsWith(methodName, 'test')
-        log.info("Executing test '#{methodName}' from file '#{filePath}'...")
-        @\_runTestFunc -> func(tester)
-        successCount += 1
+      if string_util.startsWith(methodName, 'test')
+        log.info("Executing test '#{methodName}' from file '#{file_path}'...")
+        @\_run_test_func -> func(tester)
+        success_count += 1
 
-    return successCount
+    return success_count
 
-  runTestMethod: (filePath, testName) =>
-    @\_initLogging!
-    testClass = dofile(filePath)
-    tester = testClass!
-    log.info("Executing test '#{testName}' from file '#{filePath}'...")
-    @\_runTestFunc ->
-      tester[testName](tester)
-    log.info("Test #{testName} completed successfully")
+  run_test_method: (file_path, test_name) =>
+    @\_init_logging!
+    test_class = dofile(file_path)
+    tester = test_class!
+    log.info("Executing test '#{test_name}' from file '#{file_path}'...")
+    @\_run_test_func ->
+      tester[test_name](tester)
+    log.info("Test #{test_name} completed successfully")
 
-  runAllTests: =>
-    @\_initLogging!
-    testRoot = "#{@\_getPluginRootPath!}/lua"
+  run_all_tests: =>
+    @\_init_logging!
+    test_root = "#{@\_get_plugin_root_path!}/lua"
 
-    successCount = 0
-    for testFile in *vim.fn.globpath(testRoot, '**/test_*.lua', 0, 1)
-      successCount += @\_runTestFile(testFile)
+    success_count = 0
+    for test_file in *vim.fn.globpath(test_root, '**/test_*.lua', 0, 1)
+      success_count += @\_run_test_file(test_file)
 
-    log.info("#{successCount} tests completed successfully")
+    log.info("#{success_count} tests completed successfully")

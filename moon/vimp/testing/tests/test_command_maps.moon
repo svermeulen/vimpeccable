@@ -6,50 +6,50 @@ log = require("vimp.util.log")
 helpers = require("vimp.testing.helpers")
 
 class Tester
-  testZeroArgs: =>
+  test_zero_args: =>
     received = false
-    vimp.mapCommand "Foo", ->
+    vimp.map_command "Foo", ->
       received = true
     assert.that(not received)
     vim.cmd("Foo")
     assert.that(received)
 
-  testOneArgs: =>
+  test_one_args: =>
     received = nil
-    vimp.mapCommand "Foo", (val) ->
+    vimp.map_command "Foo", (val) ->
       received = val
     assert.that(received == nil)
     vim.cmd("Foo 5")
-    assert.isEqual(received, '5')
+    assert.is_equal(received, '5')
     vim.cmd("Foo foo bar qux")
-    assert.isEqual(received, "foo bar qux")
+    assert.is_equal(received, "foo bar qux")
     assert.throws "Argument required", ->
       vim.cmd("Foo")
 
-  testTwoArgs: =>
+  test_two_args: =>
     received1 = nil
     received2 = nil
-    vimp.mapCommand "Foo", (val1, val2) ->
+    vimp.map_command "Foo", (val1, val2) ->
       received1 = val1
       received2 = val2
     assert.that(received2 == nil)
     assert.that(received1 == nil)
     vim.cmd("Foo 5")
-    assert.isEqual(received1, '5')
-    assert.isEqual(received2, nil)
+    assert.is_equal(received1, '5')
+    assert.is_equal(received2, nil)
     vim.cmd("Foo")
-    assert.isEqual(received1, nil)
-    assert.isEqual(received2, nil)
+    assert.is_equal(received1, nil)
+    assert.is_equal(received2, nil)
     vim.cmd("Foo first second")
-    assert.isEqual(received1, 'first')
-    assert.isEqual(received2, 'second')
+    assert.is_equal(received1, 'first')
+    assert.is_equal(received2, 'second')
     vim.cmd("Foo first second third")
-    assert.isEqual(received1, 'first')
-    assert.isEqual(received2, 'second')
+    assert.is_equal(received1, 'first')
+    assert.is_equal(received2, 'second')
 
-  testVarArgs: =>
+  test_var_args: =>
     received = nil
-    vimp.mapCommand "Foo", (...) ->
+    vimp.map_command "Foo", (...) ->
       received = {...}
     assert.that(received == nil)
     vim.cmd("Foo")
@@ -59,4 +59,4 @@ class Tester
     assert.that(received[1] == "first")
     vim.cmd("Foo first second third")
     assert.that(#received == 3)
-    helpers.assertSameContents(received, {'first', 'second', 'third'})
+    helpers.assert_same_contents(received, {'first', 'second', 'third'})

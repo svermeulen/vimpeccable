@@ -1,44 +1,44 @@
 
 assert = require("vimp.util.assert")
 log = require("vimp.util.log")
-tableUtil = require("vimp.util.table")
-stringUtil = require("vimp.util.string")
+table_util = require("vimp.util.table")
+string_util = require("vimp.util.string")
 
-bindMethods = {
+bind_methods = {
   'bind', 'rbind', 'nnoremap', 'inoremap', 'xnoremap',
   'vnoremap', 'onoremap', 'snoremap', 'cnoremap', 'tnoremap',
   'nmap', 'imap', 'xmap', 'vmap', 'omap', 'smap', 'cmap', 'tmap'}
 
-getExtraContext = (member, args) ->
-  if tableUtil.contains(bindMethods, member)
+get_extra_context = (member, args) ->
+  if table_util.contains(bind_methods, member)
     -- Try and add some more context info
     -- If this fails then just ignore
-    success, retValue = pcall ->
-      modes, options, extraOptions, lhsList, rhs = _vimp\_convertArgs(unpack(args))
+    success, ret_value = pcall ->
+      modes, options, extra_options, lhs_list, rhs = _vimp\_convert_args(unpack(args))
       local lhs
-      if #lhsList == 1
-        lhs = lhsList[1]
+      if #lhs_list == 1
+        lhs = lhs_list[1]
       else
-        lhs = vim.inspect(lhsList)
+        lhs = vim.inspect(lhs_list)
       return " when mapping '#{lhs}' for mode '#{modes}'"
     if success
-      return retValue
+      return ret_value
 
   return ''
 
 -- We assume here that _vimp has been set already
 return ->
   _getters = {
-    totalNumMaps: _vimp\_getTotalNumMaps,
-    mapErrorHandlingStrategies: _vimp\_getMapErrorHandlingStrategies,
-    mapErrorHandlingStrategy: _vimp\_getMapErrorHandlingStrategy,
-    aliases: _vimp\_getAliases,
-    mapsInProgress: _vimp\_getMapsInProgress,
-    currentMapInfo: _vimp\_getCurrentMapInfo,
+    total_num_maps: _vimp\_get_total_num_maps,
+    map_error_handling_strategies: _vimp\_get_map_error_handling_strategies,
+    map_error_handling_strategy: _vimp\_get_map_error_handling_strategy,
+    aliases: _vimp\_get_aliases,
+    maps_in_progress: _vimp\_get_maps_in_progress,
+    current_map_info: _vimp\_get_current_map_info,
   }
   _setters = {
-    mapErrorHandlingStrategy: _vimp\_setMapErrorHandlingStrategy,
-    printMinLogLevel: _vimp\_setPrintMinLogLevel,
+    map_error_handling_strategy: _vimp\_set_map_error_handling_strategy,
+    print_min_log_level: _vimp\_set_print_min_log_level,
   }
 
   return setmetatable({}, {
@@ -55,76 +55,76 @@ return ->
 
       assert.that(k\sub(1,1) != '_', "Attempted to call private method vimp.#{k}. This is not allowed")
 
-      wrappedFunc = (...) ->
+      wrapped_func = (...) ->
         args = {...}
         action = -> func(_vimp, unpack(args))
-        strategy = _vimp\_getMapErrorHandlingStrategy!
-        strategies = _vimp\_getMapErrorHandlingStrategies!
+        strategy = _vimp\_get_map_error_handling_strategy!
+        strategies = _vimp\_get_map_error_handling_strategies!
 
         if strategy == strategies.none
           return action!
 
-        if strategy == strategies.logMessage
-          success, retValue = pcall(action)
+        if strategy == strategies.log_message
+          success, ret_value = pcall(action)
           if success
-            return retValue
+            return ret_value
 
-          -- In this case retValue is an error string value
-          log.error("Error when calling 'vimp.#{k}'#{getExtraContext(k, args)}: #{retValue}\n")
+          -- In this case ret_value is an error string value
+          log.error("Error when calling 'vimp.#{k}'#{get_extra_context(k, args)}: #{ret_value}\n")
           return nil
 
-        if strategy == strategies.logMinimalUserStackTrace
-          success, retValue = pcall(action)
+        if strategy == strategies.log_minimal_user_stack_trace
+          success, ret_value = pcall(action)
           if success
-            return retValue
+            return ret_value
 
           -- Only show the bottom frame of the stack trace to be less verbose
           -- Usually that's the only part you're interested in anyway
-          userStackTrace = debug.traceback('', 2)
-          userStackTraceLines = stringUtil.split(userStackTrace, '\n')
-          if #userStackTraceLines > 2
-            userStackTrace = userStackTraceLines[1] .. '\n' .. userStackTraceLines[2]
-          -- In this case retValue is an error string value
-          log.error("Error when calling 'vimp.#{k}'#{getExtraContext(k, args)}: #{retValue}\n#{userStackTrace}")
+          user_stack_trace = debug.traceback('', 2)
+          user_stack_trace_lines = string_util.split(user_stack_trace, '\n')
+          if #user_stack_trace_lines > 2
+            user_stack_trace = user_stack_trace_lines[1] .. '\n' .. user_stack_trace_lines[2]
+          -- In this case ret_value is an error string value
+          log.error("Error when calling 'vimp.#{k}'#{get_extra_context(k, args)}: #{ret_value}\n#{user_stack_trace}")
           return nil
 
-        if strategy == strategies.logUserStackTrace
-          success, retValue = pcall(action)
+        if strategy == strategies.log_user_stack_trace
+          success, ret_value = pcall(action)
           if success
-            return retValue
+            return ret_value
 
-          -- In this case retValue is an error string value
-          log.error("Error when calling 'vimp.#{k}'#{getExtraContext(k, args)}: #{retValue}\n#{debug.traceback('', 2)}")
+          -- In this case ret_value is an error string value
+          log.error("Error when calling 'vimp.#{k}'#{get_extra_context(k, args)}: #{ret_value}\n#{debug.traceback('', 2)}")
           return nil
 
-        if strategy == strategies.logFullStackTrace
-          success, retValue = xpcall(action, debug.traceback)
+        if strategy == strategies.log_full_stack_trace
+          success, ret_value = xpcall(action, debug.traceback)
 
           if success
-            return retValue
+            return ret_value
 
-          -- In this case retValue is an error string value
-          log.error("Error when calling 'vimp.#{k}'#{getExtraContext(k, args)}: #{retValue}\n")
+          -- In this case ret_value is an error string value
+          log.error("Error when calling 'vimp.#{k}'#{get_extra_context(k, args)}: #{ret_value}\n")
           return nil
 
         if strategy == strategies.silent
-          success, retValue = pcall(action)
+          success, ret_value = pcall(action)
           if success
-            return retValue
+            return ret_value
           return nil
 
-        assert.that(strategy == strategies.rethrowMessage)
+        assert.that(strategy == strategies.rethrow_message)
 
-        success, retValue = pcall(action)
+        success, ret_value = pcall(action)
 
         if success
-          return retValue
+          return ret_value
 
-        -- In this case retValue is an error string value
-        error("Error when calling 'vimp.#{k}'#{getExtraContext(k, args)}: #{retValue}")
+        -- In this case ret_value is an error string value
+        error("Error when calling 'vimp.#{k}'#{get_extra_context(k, args)}: #{ret_value}")
 
-      rawset(t, k, wrappedFunc)
-      return wrappedFunc
+      rawset(t, k, wrapped_func)
+      return wrapped_func
 
     __newindex: (t, k, v) ->
       setter = _setters[k]

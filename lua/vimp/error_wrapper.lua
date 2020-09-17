@@ -1,8 +1,8 @@
 local assert = require("vimp.util.assert")
 local log = require("vimp.util.log")
-local tableUtil = require("vimp.util.table")
-local stringUtil = require("vimp.util.string")
-local bindMethods = {
+local table_util = require("vimp.util.table")
+local string_util = require("vimp.util.string")
+local bind_methods = {
   'bind',
   'rbind',
   'nnoremap',
@@ -22,81 +22,81 @@ local bindMethods = {
   'cmap',
   'tmap'
 }
-local getExtraContext
-getExtraContext = function(member, args)
-  if tableUtil.contains(bindMethods, member) then
-    local success, retValue = pcall(function()
-      local modes, options, extraOptions, lhsList, rhs = _vimp:_convertArgs(unpack(args))
+local get_extra_context
+get_extra_context = function(member, args)
+  if table_util.contains(bind_methods, member) then
+    local success, ret_value = pcall(function()
+      local modes, options, extra_options, lhs_list, rhs = _vimp:_convert_args(unpack(args))
       local lhs
-      if #lhsList == 1 then
-        lhs = lhsList[1]
+      if #lhs_list == 1 then
+        lhs = lhs_list[1]
       else
-        lhs = vim.inspect(lhsList)
+        lhs = vim.inspect(lhs_list)
       end
       return " when mapping '" .. tostring(lhs) .. "' for mode '" .. tostring(modes) .. "'"
     end)
     if success then
-      return retValue
+      return ret_value
     end
   end
   return ''
 end
 return function()
   local _getters = {
-    totalNumMaps = (function()
+    total_num_maps = (function()
       local _base_0 = _vimp
-      local _fn_0 = _base_0._getTotalNumMaps
+      local _fn_0 = _base_0._get_total_num_maps
       return function(...)
         return _fn_0(_base_0, ...)
       end
     end)(),
-    mapErrorHandlingStrategies = (function()
+    map_error_handling_strategies = (function()
       local _base_0 = _vimp
-      local _fn_0 = _base_0._getMapErrorHandlingStrategies
+      local _fn_0 = _base_0._get_map_error_handling_strategies
       return function(...)
         return _fn_0(_base_0, ...)
       end
     end)(),
-    mapErrorHandlingStrategy = (function()
+    map_error_handling_strategy = (function()
       local _base_0 = _vimp
-      local _fn_0 = _base_0._getMapErrorHandlingStrategy
+      local _fn_0 = _base_0._get_map_error_handling_strategy
       return function(...)
         return _fn_0(_base_0, ...)
       end
     end)(),
     aliases = (function()
       local _base_0 = _vimp
-      local _fn_0 = _base_0._getAliases
+      local _fn_0 = _base_0._get_aliases
       return function(...)
         return _fn_0(_base_0, ...)
       end
     end)(),
-    mapsInProgress = (function()
+    maps_in_progress = (function()
       local _base_0 = _vimp
-      local _fn_0 = _base_0._getMapsInProgress
+      local _fn_0 = _base_0._get_maps_in_progress
       return function(...)
         return _fn_0(_base_0, ...)
       end
     end)(),
-    currentMapInfo = (function()
+    current_map_info = (function()
       local _base_0 = _vimp
-      local _fn_0 = _base_0._getCurrentMapInfo
+      local _fn_0 = _base_0._get_current_map_info
       return function(...)
         return _fn_0(_base_0, ...)
       end
     end)()
   }
   local _setters = {
-    mapErrorHandlingStrategy = (function()
+    map_error_handling_strategy = (function()
       local _base_0 = _vimp
-      local _fn_0 = _base_0._setMapErrorHandlingStrategy
+      local _fn_0 = _base_0._set_map_error_handling_strategy
       return function(...)
         return _fn_0(_base_0, ...)
       end
     end)(),
-    printMinLogLevel = (function()
+    print_min_log_level = (function()
       local _base_0 = _vimp
-      local _fn_0 = _base_0._setPrintMinLogLevel
+      local _fn_0 = _base_0._set_print_min_log_level
       return function(...)
         return _fn_0(_base_0, ...)
       end
@@ -113,8 +113,8 @@ return function()
         error("No member found named 'vimp." .. tostring(k) .. "'")
       end
       assert.that(k:sub(1, 1) ~= '_', "Attempted to call private method vimp." .. tostring(k) .. ". This is not allowed")
-      local wrappedFunc
-      wrappedFunc = function(...)
+      local wrapped_func
+      wrapped_func = function(...)
         local args = {
           ...
         }
@@ -122,64 +122,64 @@ return function()
         action = function()
           return func(_vimp, unpack(args))
         end
-        local strategy = _vimp:_getMapErrorHandlingStrategy()
-        local strategies = _vimp:_getMapErrorHandlingStrategies()
+        local strategy = _vimp:_get_map_error_handling_strategy()
+        local strategies = _vimp:_get_map_error_handling_strategies()
         if strategy == strategies.none then
           return action()
         end
-        if strategy == strategies.logMessage then
-          local success, retValue = pcall(action)
+        if strategy == strategies.log_message then
+          local success, ret_value = pcall(action)
           if success then
-            return retValue
+            return ret_value
           end
-          log.error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(getExtraContext(k, args)) .. ": " .. tostring(retValue) .. "\n")
+          log.error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(get_extra_context(k, args)) .. ": " .. tostring(ret_value) .. "\n")
           return nil
         end
-        if strategy == strategies.logMinimalUserStackTrace then
-          local success, retValue = pcall(action)
+        if strategy == strategies.log_minimal_user_stack_trace then
+          local success, ret_value = pcall(action)
           if success then
-            return retValue
+            return ret_value
           end
-          local userStackTrace = debug.traceback('', 2)
-          local userStackTraceLines = stringUtil.split(userStackTrace, '\n')
-          if #userStackTraceLines > 2 then
-            userStackTrace = userStackTraceLines[1] .. '\n' .. userStackTraceLines[2]
+          local user_stack_trace = debug.traceback('', 2)
+          local user_stack_trace_lines = string_util.split(user_stack_trace, '\n')
+          if #user_stack_trace_lines > 2 then
+            user_stack_trace = user_stack_trace_lines[1] .. '\n' .. user_stack_trace_lines[2]
           end
-          log.error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(getExtraContext(k, args)) .. ": " .. tostring(retValue) .. "\n" .. tostring(userStackTrace))
+          log.error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(get_extra_context(k, args)) .. ": " .. tostring(ret_value) .. "\n" .. tostring(user_stack_trace))
           return nil
         end
-        if strategy == strategies.logUserStackTrace then
-          local success, retValue = pcall(action)
+        if strategy == strategies.log_user_stack_trace then
+          local success, ret_value = pcall(action)
           if success then
-            return retValue
+            return ret_value
           end
-          log.error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(getExtraContext(k, args)) .. ": " .. tostring(retValue) .. "\n" .. tostring(debug.traceback('', 2)))
+          log.error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(get_extra_context(k, args)) .. ": " .. tostring(ret_value) .. "\n" .. tostring(debug.traceback('', 2)))
           return nil
         end
-        if strategy == strategies.logFullStackTrace then
-          local success, retValue = xpcall(action, debug.traceback)
+        if strategy == strategies.log_full_stack_trace then
+          local success, ret_value = xpcall(action, debug.traceback)
           if success then
-            return retValue
+            return ret_value
           end
-          log.error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(getExtraContext(k, args)) .. ": " .. tostring(retValue) .. "\n")
+          log.error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(get_extra_context(k, args)) .. ": " .. tostring(ret_value) .. "\n")
           return nil
         end
         if strategy == strategies.silent then
-          local success, retValue = pcall(action)
+          local success, ret_value = pcall(action)
           if success then
-            return retValue
+            return ret_value
           end
           return nil
         end
-        assert.that(strategy == strategies.rethrowMessage)
-        local success, retValue = pcall(action)
+        assert.that(strategy == strategies.rethrow_message)
+        local success, ret_value = pcall(action)
         if success then
-          return retValue
+          return ret_value
         end
-        return error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(getExtraContext(k, args)) .. ": " .. tostring(retValue))
+        return error("Error when calling 'vimp." .. tostring(k) .. "'" .. tostring(get_extra_context(k, args)) .. ": " .. tostring(ret_value))
       end
-      rawset(t, k, wrappedFunc)
-      return wrappedFunc
+      rawset(t, k, wrapped_func)
+      return wrapped_func
     end,
     __newindex = function(t, k, v)
       local setter = _setters[k]

@@ -9,7 +9,7 @@ TestKeys = '<F4>'
 TestKeys2 = '<F5>'
 
 class Tester
-  testNnoremap: =>
+  test_nnoremap: =>
     received = false
     vimp.nnoremap TestKeys, ->
       received = true
@@ -17,16 +17,16 @@ class Tester
     helpers.rinput(TestKeys)
     assert.that(received)
 
-  testInoremap: =>
+  test_inoremap: =>
     received = false
     vimp.inoremap TestKeys, ->
       received = true
     assert.that(not received)
     helpers.rinput("i#{TestKeys}foo")
-    assert.isEqual(helpers.getLine!, 'foo')
+    assert.is_equal(helpers.get_line!, 'foo')
     assert.that(received)
 
-  testXnoremap: =>
+  test_xnoremap: =>
     received = false
     vimp.xnoremap TestKeys, ->
       helpers.input("iw")
@@ -35,10 +35,10 @@ class Tester
     helpers.input("istart middle end<esc>Fmv")
     helpers.rinput(TestKeys)
     helpers.input("cfoo<esc>")
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
     assert.that(received)
 
-  testSnoremap: =>
+  test_snoremap: =>
     received = false
     vimp.snoremap TestKeys, ->
       received = true
@@ -48,17 +48,17 @@ class Tester
     helpers.input("gh<right><right>")
     helpers.rinput(TestKeys)
     helpers.input("foo")
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
     assert.that(received)
 
-  testCnoremap: =>
+  test_cnoremap: =>
     -- Not supported
     assert.throws 'not currently supported', ->
       received = false
       vimp.cnoremap TestKeys, ->
         received = true
 
-  testOnoremap: =>
+  test_onoremap: =>
     received = false
     vimp.onoremap TestKeys, ->
       helpers.input("viw")
@@ -66,47 +66,47 @@ class Tester
     assert.that(not received)
     helpers.input("istart middle end<esc>Fm")
     helpers.rinput("d#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'start  end')
+    assert.is_equal(helpers.get_line!, 'start  end')
     assert.that(received)
 
-  testTnoremap: =>
+  test_tnoremap: =>
     -- Not supported
     assert.throws 'not currently supported', ->
       received = false
       vimp.tnoremap TestKeys, ->
         received = true
 
-  testNmap: =>
+  test_nmap: =>
     assert.throws "Cannot use recursive", ->
       vimp.nmap TestKeys, ->
         -- do nothing
 
-  testImap: =>
+  test_imap: =>
     assert.throws "Cannot use recursive", ->
       vimp.imap TestKeys, ->
         -- do nothing
 
-  testXmap: =>
+  test_xmap: =>
     assert.throws "Cannot use recursive", ->
       vimp.xmap TestKeys, ->
         -- do nothing
 
-  testSmap: =>
+  test_smap: =>
     assert.throws "Cannot use recursive", ->
       vimp.smap TestKeys, ->
         -- do nothing
 
-  testCmap: =>
+  test_cmap: =>
     assert.throws "not currently supported", ->
       vimp.cmap TestKeys, ->
         -- do nothing
 
-  testOmap: =>
+  test_omap: =>
     assert.throws "recursive mapping", ->
       vimp.omap TestKeys, ->
         -- do nothing
 
-  testTmap: =>
+  test_tmap: =>
     assert.throws "not currently supported", ->
       vimp.tmap TestKeys, ->
         -- do nothing

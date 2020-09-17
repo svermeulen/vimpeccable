@@ -8,25 +8,25 @@ class CommandMapInfo
     @handler = handler
     @name = name
 
-  removeFromVim: =>
+  remove_from_vim: =>
     vim.api.nvim_command("delcommand #{@name}")
 
-  _getNArgsFromHandler: =>
-    handlerInfo = debug.getinfo(@handler)
+  _get_n_args_from_handler: =>
+    handler_info = debug.getinfo(@handler)
 
-    if handlerInfo.isvararg
+    if handler_info.isvararg
       return '*'
 
-    if handlerInfo.nparams == 1
+    if handler_info.nparams == 1
       return '1'
 
-    if handlerInfo.nparams == 0
+    if handler_info.nparams == 0
       return '0'
 
     return '*'
 
-  _createCommandStr: =>
-    nargs = @\_getNArgsFromHandler!
+  _create_command_str: =>
+    nargs = @\_get_n_args_from_handler!
 
     if nargs == '0'
       return "command -nargs=0 #{@name} lua _vimp:_executeCommandMap(#{@id}, {})"
@@ -36,7 +36,7 @@ class CommandMapInfo
 
     return "command -nargs=* #{@name} call luaeval(\"_vimp:_executeCommandMap(#{@id}, _A)\", [<f-args>])"
 
-  addToVim: =>
-    commandStr = @\_createCommandStr!
-    -- log.debug("Adding command: #{commandStr}")
-    vim.api.nvim_command(commandStr)
+  add_to_vim: =>
+    command_str = @\_create_command_str!
+    -- log.debug("Adding command: #{command_str}")
+    vim.api.nvim_command(command_str)

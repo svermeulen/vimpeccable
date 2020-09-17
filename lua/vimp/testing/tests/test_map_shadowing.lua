@@ -8,18 +8,18 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testDisallowsLongerMap = function(self)
+    test_disallows_longer_map = function(self)
       helpers.unlet('foo')
       vimp.nnoremap(TestKeys1, [[:let g:foo = 5<cr>]])
       assert.throws("Map conflict found", function()
         return vimp.nnoremap(TestKeys2, [[:let g:foo = 2<cr>]])
       end)
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys1)
-      assert.isEqual(vim.g.foo, 5)
-      return assert.isEqual(vimp.totalNumMaps, 1)
+      assert.is_equal(vim.g.foo, 5)
+      return assert.is_equal(vimp.total_num_maps, 1)
     end,
-    testOverrideDoesNotWorkWithShadows = function(self)
+    test_override_does_not_work_with_shadows = function(self)
       helpers.unlet('foo')
       vimp.nnoremap({
         'override'
@@ -27,21 +27,21 @@ do
       assert.throws("Map conflict found", function()
         return vimp.nnoremap(TestKeys2, [[:let g:foo = 2<cr>]])
       end)
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys1)
-      assert.isEqual(vim.g.foo, 5)
-      return assert.isEqual(vimp.totalNumMaps, 1)
+      assert.is_equal(vim.g.foo, 5)
+      return assert.is_equal(vimp.total_num_maps, 1)
     end,
-    testDisallowsShorterMap = function(self)
+    test_disallows_shorter_map = function(self)
       helpers.unlet('foo')
       vimp.nnoremap(TestKeys2, [[:let g:foo = 5<cr>]])
       assert.throws("Map conflict found", function()
         return vimp.nnoremap(TestKeys1, [[:let g:foo = 2<cr>]])
       end)
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys2)
-      assert.isEqual(vim.g.foo, 5)
-      return assert.isEqual(vimp.totalNumMaps, 1)
+      assert.is_equal(vim.g.foo, 5)
+      return assert.is_equal(vimp.total_num_maps, 1)
     end
   }
   _base_0.__index = _base_0
