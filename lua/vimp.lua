@@ -116,7 +116,7 @@ do
     _observe_buffer_unload = function(self)
       vim.api.nvim_command([[augroup vimpBufWatch]])
       vim.api.nvim_command([[au!]])
-      vim.api.nvim_command([[au BufUnload * lua _vimp:_onBufferUnloaded()]])
+      vim.api.nvim_command([[au BufUnload * lua _vimp:_on_buffer_unloaded()]])
       return vim.api.nvim_command([[augroup END]])
     end,
     _get_total_num_maps = function(self)
@@ -136,7 +136,7 @@ do
         return assert.that(success)
       end
     end,
-    _onBufferUnloaded = function(self)
+    _on_buffer_unloaded = function(self)
       local buffer_handle = tonumber(vim.api.nvim_call_function("expand", {
         "<abuf>"
       }))
@@ -301,6 +301,10 @@ do
       end
       return buf_info
     end,
+    addChordCancellations = function(self, ...)
+      log.warning("Field 'vimp.addChordCancellations' is deprecated.  Use vimp.add_chord_cancellations instead!")
+      return self:add_chord_cancellations(...)
+    end,
     add_chord_cancellations = function(self, mode, prefix)
       assert.that(table_util.contains(AllModes, mode), "Invalid mode provided to add_chord_cancellations '" .. tostring(mode) .. "'")
       local trie_raw
@@ -358,6 +362,10 @@ do
     end,
     _get_aliases = function(self)
       return self._aliases
+    end,
+    addAlias = function(self, ...)
+      log.warning("Field 'vimp.addAlias' is deprecated.  Use vimp.add_alias instead!")
+      return self:add_alias(...)
     end,
     add_alias = function(self, alias, replacement)
       assert.that(not self._aliases[alias], "Found multiple aliases with key '" .. tostring(alias) .. "'")
@@ -479,6 +487,10 @@ do
     nmap = function(self, ...)
       return self:rbind('n', ...)
     end,
+    clearBufferMaps = function(self, ...)
+      log.warning("Field 'vimp.clearBufferMaps' is deprecated.  Use vimp.clear_buffer_maps instead!")
+      return self:clear_buffer_maps(...)
+    end,
     clear_buffer_maps = function(self, buffer_handle)
       local buffer_maps
       do
@@ -505,6 +517,10 @@ do
         count = count + 1
       end
       self._buffer_infos[buffer_handle] = nil
+    end,
+    unmapAll = function(self, ...)
+      log.warning("Field 'vimp.unmapAll' is deprecated.  Use vimp.unmap_all instead!")
+      return self:unmap_all(...)
     end,
     unmap_all = function(self)
       log.debug("Unmapping all maps")
@@ -533,6 +549,10 @@ do
       table_util.clear(self._aliases)
       return log.debug("Successfully unmapped " .. tostring(count) .. " maps")
     end,
+    addBufferMaps = function(self, ...)
+      log.warning("Field 'vimp.addBufferMaps' is deprecated.  Use vimp.add_buffer_maps instead!")
+      return self:add_buffer_maps(...)
+    end,
     add_buffer_maps = function(self, arg1, arg2)
       local buffer_handle, func
       if arg2 == nil then
@@ -551,6 +571,10 @@ do
       if not ok then
         return error(ret_val, 2)
       end
+    end,
+    mapCommand = function(self, ...)
+      log.warning("Field 'vimp.mapCommand' is deprecated.  Use vimp.map_command instead!")
+      return self:map_command(...)
     end,
     map_command = function(self, name, handler)
       assert.that(self._buffer_block_handle == nil, "Buffer local commands are not currently supported")

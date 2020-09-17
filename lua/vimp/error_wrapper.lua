@@ -102,11 +102,69 @@ return function()
       end
     end)()
   }
+  local _getters_deprecated = {
+    totalNumMaps = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._get_total_num_maps
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
+    end)(),
+    mapErrorHandlingStrategies = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._get_map_error_handling_strategies
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
+    end)(),
+    mapErrorHandlingStrategy = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._get_map_error_handling_strategy
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
+    end)(),
+    mapsInProgress = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._get_maps_in_progress
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
+    end)(),
+    currentMapInfo = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._get_current_map_info
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
+    end)()
+  }
+  local _setters_deprecated = {
+    mapErrorHandlingStrategy = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._set_map_error_handling_strategy
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
+    end)(),
+    printMinLogLevel = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._set_print_min_log_level
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
+    end)()
+  }
   return setmetatable({ }, {
     __index = function(t, k)
       local getter = _getters[k]
       if getter ~= nil then
         return getter()
+      end
+      getter = _getters_deprecated[k]
+      if getter ~= nil then
+        log.warning("Field 'vimp." .. tostring(k) .. "' is deprecated.  Use the snake_case version instead!")
+        return getterDeprecated()
       end
       local func = _vimp[k]
       if func == nil then
@@ -184,10 +242,16 @@ return function()
     __newindex = function(t, k, v)
       local setter = _setters[k]
       if setter ~= nil then
-        return setter(v)
-      else
-        return error("No member found named 'vimp." .. tostring(k) .. "'")
+        setter(v)
+        return 
       end
+      setter = _setters_deprecated[k]
+      if setter ~= nil then
+        log.warning("Field 'vimp." .. tostring(k) .. "' is deprecated.  Use the snake_case version instead!")
+        setter(v)
+        return 
+      end
+      return error("No member found named 'vimp." .. tostring(k) .. "'")
     end
   })
 end

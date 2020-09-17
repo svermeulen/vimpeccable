@@ -41,12 +41,30 @@ return ->
     print_min_log_level: _vimp\_set_print_min_log_level,
   }
 
+  _getters_deprecated = {
+    totalNumMaps: _vimp\_get_total_num_maps,
+    mapErrorHandlingStrategies: _vimp\_get_map_error_handling_strategies,
+    mapErrorHandlingStrategy: _vimp\_get_map_error_handling_strategy,
+    mapsInProgress: _vimp\_get_maps_in_progress,
+    currentMapInfo: _vimp\_get_current_map_info,
+  }
+  _setters_deprecated = {
+    mapErrorHandlingStrategy: _vimp\_set_map_error_handling_strategy,
+    printMinLogLevel: _vimp\_set_print_min_log_level,
+  }
+
   return setmetatable({}, {
     __index: (t, k) ->
       getter = _getters[k]
 
       if getter != nil
         return getter!
+
+      getter = _getters_deprecated[k]
+
+      if getter != nil
+        log.warning("Field 'vimp.#{k}' is deprecated.  Use the snake_case version instead!")
+        return getterDeprecated!
 
       func = _vimp[k]
 
@@ -128,8 +146,17 @@ return ->
 
     __newindex: (t, k, v) ->
       setter = _setters[k]
+
       if setter != nil
         setter(v)
-      else
-        error("No member found named 'vimp.#{k}'")
+        return
+
+      setter = _setters_deprecated[k]
+
+      if setter != nil
+        log.warning("Field 'vimp.#{k}' is deprecated.  Use the snake_case version instead!")
+        setter(v)
+        return
+
+      error("No member found named 'vimp.#{k}'")
   })

@@ -121,7 +121,7 @@ class Vimp
     -- does not get triggered for unlisted buffers
     vim.api.nvim_command [[augroup vimpBufWatch]]
     vim.api.nvim_command [[au!]]
-    vim.api.nvim_command [[au BufUnload * lua _vimp:_onBufferUnloaded()]]
+    vim.api.nvim_command [[au BufUnload * lua _vimp:_on_buffer_unloaded()]]
     vim.api.nvim_command [[augroup END]]
 
   -- Note that this includes both buffer local maps and global maps
@@ -146,7 +146,7 @@ class Vimp
       success = trie_raw\try_remove(map.raw_lhs)
       assert.that(success)
 
-  _onBufferUnloaded: =>
+  _on_buffer_unloaded: =>
     buffer_handle = tonumber(vim.api.nvim_call_function("expand", {"<abuf>"}))
     @\clear_buffer_maps(buffer_handle)
 
@@ -297,6 +297,10 @@ class Vimp
 
     return buf_info
 
+  addChordCancellations: (...) =>
+    log.warning("Field 'vimp.addChordCancellations' is deprecated.  Use vimp.add_chord_cancellations instead!")
+    @\add_chord_cancellations(...)
+
   add_chord_cancellations: (mode, prefix) =>
     assert.that(table_util.contains(AllModes, mode),
       "Invalid mode provided to add_chord_cancellations '#{mode}'")
@@ -375,6 +379,10 @@ class Vimp
 
   _get_aliases: =>
     return @_aliases
+
+  addAlias: (...) =>
+    log.warning("Field 'vimp.addAlias' is deprecated.  Use vimp.add_alias instead!")
+    @\add_alias(...)
 
   add_alias: (alias, replacement) =>
     assert.that(not @_aliases[alias], "Found multiple aliases with key '#{alias}'")
@@ -502,6 +510,10 @@ class Vimp
   nmap: (...) =>
     @\rbind('n', ...)
 
+  clearBufferMaps: (...) =>
+    log.warning("Field 'vimp.clearBufferMaps' is deprecated.  Use vimp.clear_buffer_maps instead!")
+    @\clear_buffer_maps(...)
+
   clear_buffer_maps: (buffer_handle) =>
     -- Store it first since we are removing from _maps_by_id at the same time
     buffer_maps = [x for k, x in pairs(@_maps_by_id) when x.buffer_handle == buffer_handle]
@@ -521,6 +533,10 @@ class Vimp
     @_buffer_infos[buffer_handle] = nil
 
     -- log.debug("Removed #{count} maps for #{buffer_handle}")
+
+  unmapAll: (...) =>
+    log.warning("Field 'vimp.unmapAll' is deprecated.  Use vimp.unmap_all instead!")
+    @\unmap_all(...)
 
   unmap_all: =>
     log.debug("Unmapping all maps")
@@ -553,6 +569,10 @@ class Vimp
     -- Don't bother resetting _unique_map_id_count to be extra safe
     log.debug("Successfully unmapped #{count} maps")
 
+  addBufferMaps: (...) =>
+    log.warning("Field 'vimp.addBufferMaps' is deprecated.  Use vimp.add_buffer_maps instead!")
+    @\add_buffer_maps(...)
+
   -- Can either be called with a callback only (in which case it uses
   -- current buffer) or with a bufferhandle first then the callback
   add_buffer_maps: (arg1, arg2) =>
@@ -572,6 +592,10 @@ class Vimp
 
     if not ok
       error(ret_val, 2)
+
+  mapCommand: (...) =>
+    log.warning("Field 'vimp.mapCommand' is deprecated.  Use vimp.map_command instead!")
+    @\map_command(...)
 
   map_command: (name, handler) =>
     assert.that(@_buffer_block_handle == nil, "Buffer local commands are not currently supported")
