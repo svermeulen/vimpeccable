@@ -8,51 +8,51 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testNnoremap = function(self)
+    test_nnoremap = function(self)
       helpers.unlet('foo')
       vimp.nnoremap({
         'expr'
       }, TestKeys, function()
         return [[:let g:foo = 5<cr>]]
       end)
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys)
-      return assert.isEqual(vim.g.foo, 5)
+      return assert.is_equal(vim.g.foo, 5)
     end,
-    testInoremap = function(self)
+    test_inoremap = function(self)
       vimp.inoremap({
         'expr'
       }, TestKeys, function()
         return 'foo'
       end)
       helpers.rinput("i" .. tostring(TestKeys))
-      return assert.isEqual(helpers.getLine(), 'foo')
+      return assert.is_equal(helpers.get_line(), 'foo')
     end,
-    testXnoremap = function(self)
+    test_xnoremap = function(self)
       vimp.xnoremap({
         'expr'
       }, TestKeys, function()
         return 'cfoo'
       end)
       helpers.input("istart middle end<esc>")
-      assert.isEqual(helpers.getLine(), 'start middle end')
+      assert.is_equal(helpers.get_line(), 'start middle end')
       helpers.input("Fmviw")
       helpers.rinput(TestKeys)
-      return assert.isEqual(helpers.getLine(), 'start foo end')
+      return assert.is_equal(helpers.get_line(), 'start foo end')
     end,
-    testSnoremap = function(self)
+    test_snoremap = function(self)
       vimp.snoremap({
         'expr'
       }, TestKeys, function()
         return 'foo'
       end)
       helpers.input("istart mid end<esc>")
-      assert.isEqual(helpers.getLine(), 'start mid end')
+      assert.is_equal(helpers.get_line(), 'start mid end')
       helpers.input("Fmgh<right><right>")
       helpers.rinput(TestKeys)
-      return assert.isEqual(helpers.getLine(), 'start foo end')
+      return assert.is_equal(helpers.get_line(), 'start foo end')
     end,
-    testCnoremap = function(self)
+    test_cnoremap = function(self)
       vimp.cnoremap({
         'expr'
       }, TestKeys, function()
@@ -60,9 +60,9 @@ do
       end)
       helpers.unlet('foo')
       helpers.rinput(":let g:foo='" .. tostring(TestKeys) .. "'<cr>")
-      return assert.isEqual(vim.g.foo, 'foo')
+      return assert.is_equal(vim.g.foo, 'foo')
     end,
-    testOnoremap = function(self)
+    test_onoremap = function(self)
       vimp.onoremap({
         'expr'
       }, TestKeys, function()
@@ -70,51 +70,51 @@ do
       end)
       helpers.input("istart mid end<esc>Fm")
       helpers.rinput("d" .. tostring(TestKeys))
-      return assert.isEqual(helpers.getLine(), 'start end')
+      return assert.is_equal(helpers.get_line(), 'start end')
     end,
-    testNmap = function(self)
+    test_nmap = function(self)
       vimp.nnoremap(TestKeys2, 'diw')
       vimp.nmap({
         'expr'
       }, TestKeys, function()
         return TestKeys2
       end)
-      helpers.setLines({
+      helpers.set_lines({
         'foo bar qux'
       })
       helpers.input("0w")
       helpers.rinput(tostring(TestKeys))
-      return assert.isEqual(helpers.getLine(), 'foo  qux')
+      return assert.is_equal(helpers.get_line(), 'foo  qux')
     end,
-    testImap = function(self)
+    test_imap = function(self)
       vimp.inoremap(TestKeys2, 'qux')
       vimp.imap({
         'expr'
       }, TestKeys, function()
         return TestKeys2
       end)
-      helpers.setLines({
+      helpers.set_lines({
         'foo bar'
       })
       helpers.input("0w")
       helpers.rinput("i" .. tostring(TestKeys) .. "<esc>")
-      return assert.isEqual(helpers.getLine(), 'foo quxbar')
+      return assert.is_equal(helpers.get_line(), 'foo quxbar')
     end,
-    testXmap = function(self)
+    test_xmap = function(self)
       vimp.xnoremap(TestKeys2, 'cfoo')
       vimp.xmap({
         'expr'
       }, TestKeys, function()
         return TestKeys2
       end)
-      helpers.setLines({
+      helpers.set_lines({
         'qux bar'
       })
       helpers.input('0wviw')
       helpers.rinput(TestKeys)
-      return assert.isEqual(helpers.getLine(), 'qux foo')
+      return assert.is_equal(helpers.get_line(), 'qux foo')
     end,
-    testSmap = function(self)
+    test_smap = function(self)
       vimp.snoremap(TestKeys2, 'foo')
       vimp.smap({
         'expr'
@@ -122,12 +122,12 @@ do
         return TestKeys2
       end)
       helpers.input("istart mid end<esc>")
-      assert.isEqual(helpers.getLine(), 'start mid end')
+      assert.is_equal(helpers.get_line(), 'start mid end')
       helpers.input("Fmgh<right><right>")
       helpers.rinput(TestKeys)
-      return assert.isEqual(helpers.getLine(), 'start foo end')
+      return assert.is_equal(helpers.get_line(), 'start foo end')
     end,
-    testCmap = function(self)
+    test_cmap = function(self)
       vimp.cnoremap(TestKeys2, 'foo')
       vimp.cmap({
         'expr'
@@ -136,9 +136,9 @@ do
       end)
       helpers.unlet('foo')
       helpers.rinput(":let g:foo='" .. tostring(TestKeys) .. "'<cr>")
-      return assert.isEqual(vim.g.foo, 'foo')
+      return assert.is_equal(vim.g.foo, 'foo')
     end,
-    testOmap = function(self)
+    test_omap = function(self)
       vimp.onoremap(TestKeys2, 'iw')
       vimp.omap({
         'expr'
@@ -147,7 +147,7 @@ do
       end)
       helpers.input("istart mid end<esc>Fm")
       helpers.rinput("d" .. tostring(TestKeys))
-      return assert.isEqual(helpers.getLine(), 'start  end')
+      return assert.is_equal(helpers.get_line(), 'start  end')
     end
   }
   _base_0.__index = _base_0

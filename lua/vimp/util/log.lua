@@ -21,7 +21,7 @@ do
   local _class_0
   local _base_0 = {
     log = function(self, message, level)
-      if level >= self.minLogLevel then
+      if level >= self.min_log_level then
         return vim.api.nvim_out_write("[vimp] " .. tostring(LogLevels.strings[level]) .. ": " .. tostring(message) .. "\n")
       end
     end
@@ -29,7 +29,7 @@ do
   _base_0.__index = _base_0
   _class_0 = setmetatable({
     __init = function(self)
-      self.minLogLevel = LogLevels.warning
+      self.min_log_level = LogLevels.warning
     end,
     __base = _base_0,
     __name = "PrintLogStream"
@@ -44,16 +44,16 @@ do
   _base_0.__class = _class_0
   PrintLogStream = _class_0
 end
-local printLogStream = PrintLogStream()
+local print_log_stream = PrintLogStream()
 local log
 do
   local _class_0
   local _base_0 = {
     levels = LogLevels,
     streams = {
-      printLogStream
+      print_log_stream
     },
-    printLogStream = printLogStream,
+    print_log_stream = print_log_stream,
     log = function(message, level)
       if message == nil then
         message = "nil"
@@ -78,13 +78,13 @@ do
     error = function(message)
       return log.log(message, LogLevels.error)
     end,
-    convertLogLevelStringToLevel = function(logLevelStr)
+    convert_log_level_string_to_level = function(log_level_str)
       for i = 1, #LogLevels.strings do
-        if logLevelStr == LogLevels.strings[i] then
+        if log_level_str == LogLevels.strings[i] then
           return i
         end
       end
-      return error("Invalid log level '" .. tostring(logLevelStr) .. "'")
+      return error("Invalid log level '" .. tostring(log_level_str) .. "'")
     end
   }
   _base_0.__index = _base_0

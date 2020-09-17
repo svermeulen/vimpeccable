@@ -9,93 +9,93 @@ TestKeys = '<F4>'
 TestKeys2 = '<F5>'
 
 class Tester
-  testNnoremap: =>
+  test_nnoremap: =>
     helpers.unlet('foo')
     vimp.nnoremap { 'expr' }, TestKeys, -> [[:let g:foo = 5<cr>]]
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys)
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)
 
-  testInoremap: =>
+  test_inoremap: =>
     vimp.inoremap { 'expr' }, TestKeys, -> 'foo'
     helpers.rinput("i#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'foo')
+    assert.is_equal(helpers.get_line!, 'foo')
 
-  testXnoremap: =>
+  test_xnoremap: =>
     vimp.xnoremap { 'expr' }, TestKeys, -> 'cfoo'
     helpers.input("istart middle end<esc>")
-    assert.isEqual(helpers.getLine!, 'start middle end')
+    assert.is_equal(helpers.get_line!, 'start middle end')
     helpers.input("Fmviw")
     helpers.rinput(TestKeys)
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
 
-  testSnoremap: =>
+  test_snoremap: =>
     vimp.snoremap { 'expr' }, TestKeys, -> 'foo'
     helpers.input("istart mid end<esc>")
-    assert.isEqual(helpers.getLine!, 'start mid end')
+    assert.is_equal(helpers.get_line!, 'start mid end')
     helpers.input("Fmgh<right><right>")
     helpers.rinput(TestKeys)
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
 
-  testCnoremap: =>
+  test_cnoremap: =>
     vimp.cnoremap { 'expr' }, TestKeys, -> 'foo'
     helpers.unlet('foo')
     helpers.rinput(":let g:foo='#{TestKeys}'<cr>")
-    assert.isEqual(vim.g.foo, 'foo')
+    assert.is_equal(vim.g.foo, 'foo')
 
-  testOnoremap: =>
+  test_onoremap: =>
     vimp.onoremap { 'expr' }, TestKeys, -> 'aw'
     helpers.input("istart mid end<esc>Fm")
     helpers.rinput("d#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'start end')
+    assert.is_equal(helpers.get_line!, 'start end')
 
   -- Skip this one because it's tricky to test
   -- Test it manually instead
-  -- testTnoremap: =>
+  -- test_tnoremap: =>
 
-  testNmap: =>
+  test_nmap: =>
     vimp.nnoremap TestKeys2, 'diw'
     vimp.nmap {'expr'}, TestKeys, -> TestKeys2
-    helpers.setLines({'foo bar qux'})
+    helpers.set_lines({'foo bar qux'})
     helpers.input("0w")
     helpers.rinput("#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'foo  qux')
+    assert.is_equal(helpers.get_line!, 'foo  qux')
 
-  testImap: =>
+  test_imap: =>
     vimp.inoremap TestKeys2, 'qux'
     vimp.imap {'expr'}, TestKeys, -> TestKeys2
-    helpers.setLines({'foo bar'})
+    helpers.set_lines({'foo bar'})
     helpers.input("0w")
     helpers.rinput("i#{TestKeys}<esc>")
-    assert.isEqual(helpers.getLine!, 'foo quxbar')
+    assert.is_equal(helpers.get_line!, 'foo quxbar')
 
-  testXmap: =>
+  test_xmap: =>
     vimp.xnoremap TestKeys2, 'cfoo'
     vimp.xmap {'expr'}, TestKeys, -> TestKeys2
-    helpers.setLines({'qux bar'})
+    helpers.set_lines({'qux bar'})
     helpers.input('0wviw')
     helpers.rinput(TestKeys)
-    assert.isEqual(helpers.getLine!, 'qux foo')
+    assert.is_equal(helpers.get_line!, 'qux foo')
 
-  testSmap: =>
+  test_smap: =>
     vimp.snoremap TestKeys2, 'foo'
     vimp.smap {'expr'}, TestKeys, -> TestKeys2
     helpers.input("istart mid end<esc>")
-    assert.isEqual(helpers.getLine!, 'start mid end')
+    assert.is_equal(helpers.get_line!, 'start mid end')
     helpers.input("Fmgh<right><right>")
     helpers.rinput(TestKeys)
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
 
-  testCmap: =>
+  test_cmap: =>
     vimp.cnoremap TestKeys2, 'foo'
     vimp.cmap {'expr'}, TestKeys, -> TestKeys2
     helpers.unlet('foo')
     helpers.rinput(":let g:foo='#{TestKeys}'<cr>")
-    assert.isEqual(vim.g.foo, 'foo')
+    assert.is_equal(vim.g.foo, 'foo')
 
-  testOmap: =>
+  test_omap: =>
     vimp.onoremap TestKeys2, 'iw'
     vimp.omap {'expr'}, TestKeys, -> TestKeys2
     helpers.input("istart mid end<esc>Fm")
     helpers.rinput("d#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'start  end')
+    assert.is_equal(helpers.get_line!, 'start  end')

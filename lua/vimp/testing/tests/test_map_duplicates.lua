@@ -7,43 +7,43 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testDuplicatesAreNotAllowedByDefault = function(self)
+    test_duplicates_are_not_allowed_by_default = function(self)
       helpers.unlet('foo')
       vimp.nnoremap(TestKeys, [[:let g:foo = 5<cr>]])
       return assert.throws('duplicate mapping', function()
         return vimp.nnoremap(TestKeys, [[:let g:foo = 2<cr>]])
       end)
     end,
-    testOverrideOption = function(self)
+    test_override_option = function(self)
       helpers.unlet('foo')
       vimp.nnoremap(TestKeys, [[:let g:foo = 5<cr>]])
       vimp.nnoremap({
         'override'
       }, TestKeys, [[:let g:foo = 2<cr>]])
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys)
-      return assert.isEqual(vim.g.foo, 2)
+      return assert.is_equal(vim.g.foo, 2)
     end,
-    testConflictWithVimMap1 = function(self)
+    test_conflict_with_vim_map1 = function(self)
       helpers.unlet('foo')
       vim.cmd("nnoremap " .. tostring(TestKeys) .. " :<c-u>let g:foo = 2<cr>")
       assert.throws('mapping already exists', function()
         return vimp.nnoremap(TestKeys, [[:let g:foo = 3<cr>]])
       end)
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys)
-      assert.isEqual(vim.g.foo, 2)
+      assert.is_equal(vim.g.foo, 2)
       return vim.cmd("nunmap <f4>")
     end,
-    testConflictWithVimMap2 = function(self)
+    test_conflict_with_vim_map2 = function(self)
       helpers.unlet('foo')
       vim.cmd("nnoremap " .. tostring(TestKeys) .. " :<c-u>let g:foo = 2<cr>")
       vimp.nnoremap({
         'override'
       }, TestKeys, [[:let g:foo = 3<cr>]])
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys)
-      return assert.isEqual(vim.g.foo, 3)
+      return assert.is_equal(vim.g.foo, 3)
     end
   }
   _base_0.__index = _base_0

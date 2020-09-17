@@ -9,29 +9,29 @@ TestKeys1 = '<F4>'
 TestKeys2 = '<F5>'
 
 class Tester
-  testSimpleAlias: =>
+  test_simple_alias: =>
     helpers.unlet('foo')
-    vimp.addAlias(TestKeys1, TestKeys2)
+    vimp.add_alias(TestKeys1, TestKeys2)
     vimp.nnoremap TestKeys1, [[:let g:foo = 5<cr>]]
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys2)
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)
     helpers.unlet('foo')
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys1)
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
 
-  testMultipleAliases: =>
+  test_multiple_aliases: =>
     helpers.unlet('foo')
-    vimp.addAlias('<d-g>', TestKeys1)
-    vimp.addAlias('<d-e>', TestKeys2)
+    vimp.add_alias('<d-g>', TestKeys1)
+    vimp.add_alias('<d-e>', TestKeys2)
     vimp.nnoremap '<d-g><d-e>', [[:let g:foo = 5<cr>]]
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys1)
     helpers.input('<esc>')
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys2)
     helpers.input('<esc>')
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput("#{TestKeys1}#{TestKeys2}")
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)

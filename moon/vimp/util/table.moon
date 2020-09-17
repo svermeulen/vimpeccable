@@ -4,16 +4,16 @@ class Table
     for key in pairs (table)
         table[key] = nil
 
-  getKeys: (table) ->
+  get_keys: (table) ->
     [k for k, _ in pairs(table)]
 
-  shallowCopy: (t) ->
+  shallow_copy: (t) ->
     t2 = {}
     for k,v in pairs(t) do
       t2[k] = v
     return t2
 
-  indexOf: (list, item) ->
+  index_of: (list, item) ->
     for i = 1,#list
       if item == list[i]
         return i
@@ -21,5 +21,5 @@ class Table
     return -1
 
   contains: (list, item) ->
-    return Table.indexOf(list, item) != -1
+    return Table.index_of(list, item) != -1
 

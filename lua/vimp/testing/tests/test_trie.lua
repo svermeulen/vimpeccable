@@ -6,72 +6,72 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testAdds = function(self)
+    test_adds = function(self)
       local trie = UniqueTrie()
-      local succeeded, existingPrefix, exactMatch = trie:tryAdd('abc')
+      local succeeded, existing_prefix, exact_match = trie:try_add('abc')
       assert.that(succeeded)
-      assert.that(existingPrefix == nil)
-      assert.that(not exactMatch)
-      succeeded, existingPrefix, exactMatch = trie:tryAdd('abc')
+      assert.that(existing_prefix == nil)
+      assert.that(not exact_match)
+      succeeded, existing_prefix, exact_match = trie:try_add('abc')
       assert.that(not succeeded)
-      assert.that(existingPrefix == 'abc')
-      assert.that(exactMatch)
-      succeeded, existingPrefix, exactMatch = trie:tryAdd('abcd')
+      assert.that(existing_prefix == 'abc')
+      assert.that(exact_match)
+      succeeded, existing_prefix, exact_match = trie:try_add('abcd')
       assert.that(not succeeded)
-      assert.that(existingPrefix == 'abc')
-      assert.that(not exactMatch)
-      succeeded, existingPrefix, exactMatch = trie:tryAdd('abxyz')
+      assert.that(existing_prefix == 'abc')
+      assert.that(not exact_match)
+      succeeded, existing_prefix, exact_match = trie:try_add('abxyz')
       assert.that(succeeded)
-      assert.that(existingPrefix == nil)
-      assert.that(not exactMatch)
-      succeeded, existingPrefix, exactMatch = trie:tryAdd('a')
+      assert.that(existing_prefix == nil)
+      assert.that(not exact_match)
+      succeeded, existing_prefix, exact_match = trie:try_add('a')
       assert.that(not succeeded)
-      assert.that(existingPrefix == 'a')
-      assert.that(not exactMatch)
-      helpers.assertSameContents(trie:getAllEntries(), {
+      assert.that(existing_prefix == 'a')
+      assert.that(not exact_match)
+      helpers.assert_same_contents(trie:get_all_entries(), {
         'abc',
         'abxyz'
       })
-      helpers.assertSameContents(trie:getAllSuffixes(''), {
+      helpers.assert_same_contents(trie:get_all_suffixes(''), {
         'abc',
         'abxyz'
       })
-      helpers.assertSameContents(trie:getAllSuffixes('a'), {
+      helpers.assert_same_contents(trie:get_all_suffixes('a'), {
         'bc',
         'bxyz'
       })
-      helpers.assertSameContents(trie:getAllSuffixes('ab'), {
+      helpers.assert_same_contents(trie:get_all_suffixes('ab'), {
         'c',
         'xyz'
       })
-      return helpers.assertSameContents(trie:getAllSuffixes('abc'), { })
+      return helpers.assert_same_contents(trie:get_all_suffixes('abc'), { })
     end,
-    testRemove = function(self)
+    test_remove = function(self)
       local trie = UniqueTrie()
-      local succeeded, existingPrefix, exactMatch = trie:tryAdd('ab')
+      local succeeded, existing_prefix, exact_match = trie:try_add('ab')
       assert.that(succeeded)
-      helpers.assertSameContents(trie:getAllEntries(), {
+      helpers.assert_same_contents(trie:get_all_entries(), {
         'ab'
       })
-      assert.that(not trie:tryRemove('a'))
-      assert.that(trie:tryRemove('ab'))
-      helpers.assertSameContents(trie:getAllEntries(), { })
-      succeeded, existingPrefix, exactMatch = trie:tryAdd('ab')
+      assert.that(not trie:try_remove('a'))
+      assert.that(trie:try_remove('ab'))
+      helpers.assert_same_contents(trie:get_all_entries(), { })
+      succeeded, existing_prefix, exact_match = trie:try_add('ab')
       assert.that(succeeded)
-      succeeded, existingPrefix, exactMatch = trie:tryAdd('acdef')
+      succeeded, existing_prefix, exact_match = trie:try_add('acdef')
       assert.that(succeeded)
-      succeeded, existingPrefix, exactMatch = trie:tryAdd('acdz')
+      succeeded, existing_prefix, exact_match = trie:try_add('acdz')
       assert.that(succeeded)
-      assert.that(not trie:tryRemove('a'))
-      assert.that(not trie:tryRemove('ac'))
-      assert.that(not trie:tryRemove('acd'))
-      helpers.assertSameContents(trie:getAllEntries(), {
+      assert.that(not trie:try_remove('a'))
+      assert.that(not trie:try_remove('ac'))
+      assert.that(not trie:try_remove('acd'))
+      helpers.assert_same_contents(trie:get_all_entries(), {
         'ab',
         'acdef',
         'acdz'
       })
-      trie:tryRemove('acdef')
-      return helpers.assertSameContents(trie:getAllEntries(), {
+      trie:try_remove('acdef')
+      return helpers.assert_same_contents(trie:get_all_entries(), {
         'ab',
         'acdz'
       })

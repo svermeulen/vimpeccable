@@ -284,7 +284,7 @@ util = require('vimrc.util')
 -- r = reload vimrc plugin
 vimp.nnoremap('<leader>r', function()
   -- Remove all previously added vimpeccable maps
-  vimp.unmapAll()
+  vimp.unmap_all()
   -- Unload the lua namespace so that the next time require('vimrc') or require('vimrc.X') is called
   -- it will reload the file
   -- By default, require() will only load the lua file the first time it is called and thereafter
@@ -388,7 +388,7 @@ If you then type `<space>dd` and then hit any key other than `b`, you will find 
 You can avoid these problems by adding the following to the bottom of your `vimrc.lua`:
 
 ```viml
-vimp.addChordCancellations('n', '<leader>')
+vimp.add_chord_cancellations('n', '<leader>')
 ```
 
 Now if we reload with `<space>r`, then hit `<space>dd<esc>`, then the line will no longer be deleted.  And similarly, if we hit `<space>d<esc>`, nothing will happen anymore.
@@ -413,7 +413,7 @@ vimp.nnoremap({'buffer'}, '<leader>t2', [[:echo 'another buffer local map!'<cr>]
 Or alternatively:
 
 ```lua
-vimp.addBufferMaps(function()
+vimp.add_buffer_maps(function()
   vimp.nnoremap('<leader>t1', function() print('lua map!') end)
   vimp.nnoremap('<leader>t2', function() print('lua map two!') end)
 end)
@@ -422,7 +422,7 @@ end)
 You can also specify the exact buffer if you know the buffer id like this:
 
 ```lua
-vimp.addBufferMaps(bufferId, function()
+vimp.add_buffer_maps(bufferId, function()
   vimp.nnoremap('<leader>t1', function() print('lua map!') end)
   vimp.nnoremap('<leader>t2', function() print('lua map two!') end)
 end)
@@ -433,7 +433,7 @@ For a full example, install `vimpeccable-lua-vimrc-advanced-example` as explaine
 Or, alternatively, in MoonScript instead of lua:
 
 ```lua
-vimp.addBufferMaps ->
+vimp.add_buffer_maps ->
   vimp.nnoremap '<leader>t1', -> print('lua map!')
   vimp.nnoremap '<leader>t2', -> print('lua map two!')
 ```
@@ -460,11 +460,11 @@ Note here that I'm using `Sv` as a prefix on my commands so that I can just type
 To do this in lua with vimpeccable instead, you could do this:
 
 ```lua
-vimp.mapCommand('SvOpenFileOnGithub', function()
+vimp.map_command('SvOpenFileOnGithub', function()
   print("Todo - Open the URL on github for current file on current line")
 end)
 
-vimp.mapCommand('SvRename', function(newName)
+vimp.map_command('SvRename', function(newName)
   print("Todo - rename current file to " .. newName)
 end)
 ```
@@ -472,10 +472,10 @@ end)
 Or, if using [MoonScript](https://moonscript.org/):
 
 ```moonscript
-vimp.mapCommand 'SvOpenFileOnGithub', ->
+vimp.map_command 'SvOpenFileOnGithub', ->
   print("Todo - Open the URL on github for current file on current line")
 
-vimp.mapCommand 'SvRename', (newName) ->
+vimp.map_command 'SvRename', (newName) ->
   print("Todo - rename current file to " .. newName)
 ```
 

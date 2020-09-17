@@ -6,54 +6,54 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testZeroArgs = function(self)
+    test_zero_args = function(self)
       local received = false
-      vimp.mapCommand("Foo", function()
+      vimp.map_command("Foo", function()
         received = true
       end)
       assert.that(not received)
       vim.cmd("Foo")
       return assert.that(received)
     end,
-    testOneArgs = function(self)
+    test_one_args = function(self)
       local received = nil
-      vimp.mapCommand("Foo", function(val)
+      vimp.map_command("Foo", function(val)
         received = val
       end)
       assert.that(received == nil)
       vim.cmd("Foo 5")
-      assert.isEqual(received, '5')
+      assert.is_equal(received, '5')
       vim.cmd("Foo foo bar qux")
-      assert.isEqual(received, "foo bar qux")
+      assert.is_equal(received, "foo bar qux")
       return assert.throws("Argument required", function()
         return vim.cmd("Foo")
       end)
     end,
-    testTwoArgs = function(self)
+    test_two_args = function(self)
       local received1 = nil
       local received2 = nil
-      vimp.mapCommand("Foo", function(val1, val2)
+      vimp.map_command("Foo", function(val1, val2)
         received1 = val1
         received2 = val2
       end)
       assert.that(received2 == nil)
       assert.that(received1 == nil)
       vim.cmd("Foo 5")
-      assert.isEqual(received1, '5')
-      assert.isEqual(received2, nil)
+      assert.is_equal(received1, '5')
+      assert.is_equal(received2, nil)
       vim.cmd("Foo")
-      assert.isEqual(received1, nil)
-      assert.isEqual(received2, nil)
+      assert.is_equal(received1, nil)
+      assert.is_equal(received2, nil)
       vim.cmd("Foo first second")
-      assert.isEqual(received1, 'first')
-      assert.isEqual(received2, 'second')
+      assert.is_equal(received1, 'first')
+      assert.is_equal(received2, 'second')
       vim.cmd("Foo first second third")
-      assert.isEqual(received1, 'first')
-      return assert.isEqual(received2, 'second')
+      assert.is_equal(received1, 'first')
+      return assert.is_equal(received2, 'second')
     end,
-    testVarArgs = function(self)
+    test_var_args = function(self)
       local received = nil
-      vimp.mapCommand("Foo", function(...)
+      vimp.map_command("Foo", function(...)
         received = {
           ...
         }
@@ -66,7 +66,7 @@ do
       assert.that(received[1] == "first")
       vim.cmd("Foo first second third")
       assert.that(#received == 3)
-      return helpers.assertSameContents(received, {
+      return helpers.assert_same_contents(received, {
         'first',
         'second',
         'third'

@@ -9,31 +9,31 @@ TestKeys1 = '<F4>'
 TestKeys2 = '<F5>'
 
 class Tester
-  testBasic: =>
+  test_basic: =>
     received = false
     vimp.nnoremap TestKeys1, ->
-      assert.isEqual(vimp.currentMapInfo.mode, 'n')
-      assert.isEqual(vimp.currentMapInfo.lhs, TestKeys1)
-      assert.isEqual(#vimp.mapsInProgress, 1)
+      assert.is_equal(vimp.current_map_info.mode, 'n')
+      assert.is_equal(vimp.current_map_info.lhs, TestKeys1)
+      assert.is_equal(#vimp.maps_in_progress, 1)
       received = true
     assert.that(not received)
     helpers.rinput(TestKeys1)
     assert.that(received)
 
-  testNestedMaps: =>
+  test_nested_maps: =>
     received1 = false
     received2 = false
 
     vimp.nnoremap TestKeys1, ->
-      assert.isEqual(vimp.currentMapInfo.mode, 'n')
-      assert.isEqual(vimp.currentMapInfo.lhs, TestKeys1)
-      assert.isEqual(#vimp.mapsInProgress, 2)
+      assert.is_equal(vimp.current_map_info.mode, 'n')
+      assert.is_equal(vimp.current_map_info.lhs, TestKeys1)
+      assert.is_equal(#vimp.maps_in_progress, 2)
       received1 = true
 
     vimp.nnoremap TestKeys2, ->
-      assert.isEqual(vimp.currentMapInfo.mode, 'n')
-      assert.isEqual(vimp.currentMapInfo.lhs, TestKeys2)
-      assert.isEqual(#vimp.mapsInProgress, 1)
+      assert.is_equal(vimp.current_map_info.mode, 'n')
+      assert.is_equal(vimp.current_map_info.lhs, TestKeys2)
+      assert.is_equal(#vimp.maps_in_progress, 1)
       helpers.rinput(TestKeys1)
       received2 = true
 

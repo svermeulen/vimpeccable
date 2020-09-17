@@ -3,10 +3,10 @@ local UniqueTrie
 do
   local _class_0
   local _base_0 = {
-    isEmpty = function(self)
+    is_empty = function(self)
       return next(self.root) == nil
     end,
-    _tryRemove = function(self, node, index, data)
+    _try_remove = function(self, node, index, data)
       local c = data:byte(index)
       local child = node[c]
       if child == nil then
@@ -19,7 +19,7 @@ do
         node[c] = nil
         return true
       end
-      local success = self:_tryRemove(child, index + 1, data)
+      local success = self:_try_remove(child, index + 1, data)
       if not success then
         return false
       end
@@ -28,10 +28,10 @@ do
       end
       return success
     end,
-    tryRemove = function(self, data)
-      return self:_tryRemove(self.root, 1, data)
+    try_remove = function(self, data)
+      return self:_try_remove(self.root, 1, data)
     end,
-    _convertBytesToString = function(self, bytes)
+    _convert_bytes_to_string = function(self, bytes)
       local result = ''
       for _index_0 = 1, #bytes do
         local c = bytes[_index_0]
@@ -39,34 +39,34 @@ do
       end
       return result
     end,
-    _visitBranches = function(self, node, stack, callback)
+    _visit_branches = function(self, node, stack, callback)
       for char, child in pairs(node) do
         table.insert(stack, char)
         if next(child) ~= nil then
-          callback(self:_convertBytesToString(stack))
-          self:_visitBranches(child, stack, callback)
+          callback(self:_convert_bytes_to_string(stack))
+          self:_visit_branches(child, stack, callback)
         end
         table.remove(stack)
       end
     end,
-    visitBranches = function(self, prefix, callback)
-      local node = self:_getSuffixNode(prefix)
+    visit_branches = function(self, prefix, callback)
+      local node = self:_get_suffix_node(prefix)
       if node ~= nil then
-        return self:_visitBranches(node, { }, callback)
+        return self:_visit_branches(node, { }, callback)
       end
     end,
     _visitSuffixes = function(self, node, stack, callback)
       for char, child in pairs(node) do
         table.insert(stack, char)
         if next(child) == nil then
-          callback(self:_convertBytesToString(stack))
+          callback(self:_convert_bytes_to_string(stack))
         else
           self:_visitSuffixes(child, stack, callback)
         end
         table.remove(stack)
       end
     end,
-    _getSuffixNode = function(self, prefix)
+    _get_suffix_node = function(self, prefix)
       local currentNode = self.root
       for i = 1, #prefix do
         local c = prefix:byte(i)
@@ -78,30 +78,30 @@ do
       end
       return currentNode
     end,
-    visitSuffixes = function(self, prefix, callback)
-      local node = self:_getSuffixNode(prefix)
+    visit_suffixes = function(self, prefix, callback)
+      local node = self:_get_suffix_node(prefix)
       if node ~= nil then
         return self:_visitSuffixes(node, { }, callback)
       end
     end,
-    getAllEntries = function(self)
-      return self:getAllSuffixes('')
+    get_all_entries = function(self)
+      return self:get_all_suffixes('')
     end,
-    getAllBranches = function(self, prefix)
+    get_all_branches = function(self, prefix)
       local branches = { }
-      self:visitBranches(prefix, function(suffix)
+      self:visit_branches(prefix, function(suffix)
         return table.insert(branches, suffix)
       end)
       return branches
     end,
-    getAllSuffixes = function(self, prefix)
+    get_all_suffixes = function(self, prefix)
       local suffixes = { }
-      self:visitSuffixes(prefix, function(suffix)
+      self:visit_suffixes(prefix, function(suffix)
         return table.insert(suffixes, suffix)
       end)
       return suffixes
     end,
-    tryAdd = function(self, data, dryRun)
+    try_add = function(self, data, dryRun)
       local currentNode = self.root
       local isNew = false
       for i = 1, #data do

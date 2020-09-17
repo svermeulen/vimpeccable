@@ -8,31 +8,31 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    testBasic = function(self)
+    test_basic = function(self)
       local received = false
       vimp.nnoremap(TestKeys1, function()
-        assert.isEqual(vimp.currentMapInfo.mode, 'n')
-        assert.isEqual(vimp.currentMapInfo.lhs, TestKeys1)
-        assert.isEqual(#vimp.mapsInProgress, 1)
+        assert.is_equal(vimp.current_map_info.mode, 'n')
+        assert.is_equal(vimp.current_map_info.lhs, TestKeys1)
+        assert.is_equal(#vimp.maps_in_progress, 1)
         received = true
       end)
       assert.that(not received)
       helpers.rinput(TestKeys1)
       return assert.that(received)
     end,
-    testNestedMaps = function(self)
+    test_nested_maps = function(self)
       local received1 = false
       local received2 = false
       vimp.nnoremap(TestKeys1, function()
-        assert.isEqual(vimp.currentMapInfo.mode, 'n')
-        assert.isEqual(vimp.currentMapInfo.lhs, TestKeys1)
-        assert.isEqual(#vimp.mapsInProgress, 2)
+        assert.is_equal(vimp.current_map_info.mode, 'n')
+        assert.is_equal(vimp.current_map_info.lhs, TestKeys1)
+        assert.is_equal(#vimp.maps_in_progress, 2)
         received1 = true
       end)
       vimp.nnoremap(TestKeys2, function()
-        assert.isEqual(vimp.currentMapInfo.mode, 'n')
-        assert.isEqual(vimp.currentMapInfo.lhs, TestKeys2)
-        assert.isEqual(#vimp.mapsInProgress, 1)
+        assert.is_equal(vimp.current_map_info.mode, 'n')
+        assert.is_equal(vimp.current_map_info.lhs, TestKeys2)
+        assert.is_equal(#vimp.maps_in_progress, 1)
         helpers.rinput(TestKeys1)
         received2 = true
       end)

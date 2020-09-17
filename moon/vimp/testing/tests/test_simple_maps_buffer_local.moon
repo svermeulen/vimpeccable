@@ -8,7 +8,7 @@ helpers = require("vimp.testing.helpers")
 TestKeys = '<F4>'
 
 class Tester
-  _execInTemporaryBuffer: (func) =>
+  _exec_in_temporary_buffer: (func) =>
     startBuffer = vim.api.nvim_get_current_buf()
     tempBuffer = vim.api.nvim_create_buf(true, false)
     vim.cmd("b #{tempBuffer}")
@@ -16,147 +16,147 @@ class Tester
     vim.cmd("b #{startBuffer}")
     vim.cmd("bd! #{tempBuffer}")
 
-  testForceKillBufferBeforeUnmap: =>
-    @\_execInTemporaryBuffer ->
+  test_force_kill_buffer_before_unmap: =>
+    @\_exec_in_temporary_buffer ->
       vimp.nnoremap { 'buffer' }, TestKeys, [[:let g:foo = 5<cr>]]
-      assert.isEqual(vimp.totalNumMaps, 1)
-    assert.isEqual(vimp.totalNumMaps, 0)
+      assert.is_equal(vimp.total_num_maps, 1)
+    assert.is_equal(vimp.total_num_maps, 0)
 
-  testNnoremap: =>
+  test_nnoremap: =>
     helpers.unlet('foo')
     vimp.nnoremap { 'buffer' }, TestKeys, [[:let g:foo = 5<cr>]]
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys)
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)
     helpers.unlet('foo')
-    @\_execInTemporaryBuffer ->
+    @\_exec_in_temporary_buffer ->
       helpers.rinput(TestKeys)
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
 
-  testInoremap: =>
+  test_inoremap: =>
     vimp.inoremap { 'buffer' }, TestKeys, 'foo'
     helpers.rinput("i#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'foo')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(helpers.get_line!, 'foo')
+    @\_exec_in_temporary_buffer ->
       helpers.rinput(TestKeys)
-      assert.isEqual(helpers.getLine!, '')
+      assert.is_equal(helpers.get_line!, '')
 
-  testXnoremap: =>
+  test_xnoremap: =>
     vimp.xnoremap { 'buffer' }, TestKeys, 'cfoo'
     setupBuffer = ->
       helpers.input("istart middle end<esc>")
-      assert.isEqual(helpers.getLine!, 'start middle end')
+      assert.is_equal(helpers.get_line!, 'start middle end')
       helpers.input("Fmviw")
       helpers.rinput(TestKeys)
     setupBuffer!
-    assert.isEqual(helpers.getLine!, 'start foo end')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(helpers.get_line!, 'start foo end')
+    @\_exec_in_temporary_buffer ->
       setupBuffer!
-      assert.isEqual(helpers.getLine!, 'start middle end')
+      assert.is_equal(helpers.get_line!, 'start middle end')
 
-  testSnoremap: =>
+  test_snoremap: =>
     vimp.snoremap { 'buffer' }, TestKeys, 'foo'
     setupBuffer = ->
       helpers.input("istart mid end<esc>")
-      assert.isEqual(helpers.getLine!, 'start mid end')
+      assert.is_equal(helpers.get_line!, 'start mid end')
       helpers.input("Fmgh<right><right>")
       helpers.rinput(TestKeys)
     setupBuffer!
-    assert.isEqual(helpers.getLine!, 'start foo end')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(helpers.get_line!, 'start foo end')
+    @\_exec_in_temporary_buffer ->
       setupBuffer!
-      assert.isEqual(helpers.getLine!, 'start mid end')
+      assert.is_equal(helpers.get_line!, 'start mid end')
 
-  testCnoremap: =>
+  test_cnoremap: =>
     vimp.cnoremap { 'buffer' }, TestKeys, 'foo'
     helpers.unlet('foo')
     helpers.rinput(":let g:foo='#{TestKeys}'<cr>")
-    assert.isEqual(vim.g.foo, 'foo')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(vim.g.foo, 'foo')
+    @\_exec_in_temporary_buffer ->
       helpers.unlet('foo')
       helpers.rinput(":let g:foo='#{TestKeys}'<cr>")
-      assert.isEqual(vim.g.foo, TestKeys)
+      assert.is_equal(vim.g.foo, TestKeys)
 
-  testOnoremap: =>
+  test_onoremap: =>
     vimp.onoremap { 'buffer' }, TestKeys, 'aw'
     setup = ->
       helpers.input("istart mid end<esc>Fm")
       helpers.rinput("d#{TestKeys}")
     setup!
-    assert.isEqual(helpers.getLine!, 'start end')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(helpers.get_line!, 'start end')
+    @\_exec_in_temporary_buffer ->
       setup!
-      assert.isEqual(helpers.getLine!, 'start mid end')
+      assert.is_equal(helpers.get_line!, 'start mid end')
 
   -- Skip this one because it's tricky to test
   -- Test it manually instead
-  -- testTnoremap: =>
+  -- test_tnoremap: =>
 
-  testNmap: =>
+  test_nmap: =>
     helpers.unlet('foo')
     vimp.nmap { 'buffer' }, TestKeys, [[:let g:foo = 5<cr>]]
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys)
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)
     helpers.unlet('foo')
-    @\_execInTemporaryBuffer ->
+    @\_exec_in_temporary_buffer ->
       helpers.rinput(TestKeys)
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
 
-  testImap: =>
+  test_imap: =>
     vimp.imap { 'buffer' }, TestKeys, 'foo'
     helpers.rinput("i#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'foo')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(helpers.get_line!, 'foo')
+    @\_exec_in_temporary_buffer ->
       helpers.rinput("i#{TestKeys}<esc>")
-      assert.isEqual(helpers.getLine!, TestKeys)
+      assert.is_equal(helpers.get_line!, TestKeys)
 
-  testXmap: =>
+  test_xmap: =>
     vimp.xmap { 'buffer' }, TestKeys, 'cfoo'
     setup = ->
       helpers.input("istart middle end<esc>")
-      assert.isEqual(helpers.getLine!, 'start middle end')
+      assert.is_equal(helpers.get_line!, 'start middle end')
       helpers.input("Fmviw")
       helpers.rinput(TestKeys)
     setup!
-    assert.isEqual(helpers.getLine!, 'start foo end')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(helpers.get_line!, 'start foo end')
+    @\_exec_in_temporary_buffer ->
       setup!
-      assert.isEqual(helpers.getLine!, "start middle end")
+      assert.is_equal(helpers.get_line!, "start middle end")
 
-  testSmap: =>
+  test_smap: =>
     vimp.smap { 'buffer' }, TestKeys, 'foo'
     setup = ->
       helpers.input("istart mid end<esc>")
-      assert.isEqual(helpers.getLine!, 'start mid end')
+      assert.is_equal(helpers.get_line!, 'start mid end')
       helpers.input("Fmgh<right><right>")
       helpers.rinput(TestKeys)
     setup!
-    assert.isEqual(helpers.getLine!, 'start foo end')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(helpers.get_line!, 'start foo end')
+    @\_exec_in_temporary_buffer ->
       setup!
-      assert.isEqual(helpers.getLine!, 'start mid end')
+      assert.is_equal(helpers.get_line!, 'start mid end')
 
-  testCmap: =>
+  test_cmap: =>
     vimp.cmap { 'buffer' }, TestKeys, 'foo'
     helpers.unlet('foo')
     helpers.rinput(":let g:foo='#{TestKeys}'<cr>")
-    assert.isEqual(vim.g.foo, 'foo')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(vim.g.foo, 'foo')
+    @\_exec_in_temporary_buffer ->
       helpers.unlet('foo')
       helpers.rinput(":let g:foo='#{TestKeys}'<cr>")
-      assert.isEqual(vim.g.foo, TestKeys)
+      assert.is_equal(vim.g.foo, TestKeys)
 
-  testOmap: =>
+  test_omap: =>
     vimp.omap { 'buffer' }, TestKeys, 'iw'
     helpers.input("istart mid end<esc>Fm")
     helpers.rinput("d#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'start  end')
-    @\_execInTemporaryBuffer ->
+    assert.is_equal(helpers.get_line!, 'start  end')
+    @\_exec_in_temporary_buffer ->
       helpers.input("istart mid end<esc>Fm")
       helpers.rinput("d#{TestKeys}")
-      assert.isEqual(helpers.getLine!, 'start mid end')
+      assert.is_equal(helpers.get_line!, 'start mid end')
 
   -- Skip this one because it's tricky to test
   -- Test it manually instead
-  -- testTmap: =>
+  -- test_tmap: =>

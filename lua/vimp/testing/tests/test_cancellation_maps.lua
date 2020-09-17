@@ -9,23 +9,23 @@ do
     test1 = function(self)
       helpers.unlet('foo')
       vimp.nnoremap('dlb', [[:let g:foo = 5<cr>]])
-      helpers.setLines({
+      helpers.set_lines({
         "abcdef"
       })
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.input("0fc")
       helpers.rinput('dlb')
-      assert.isEqual(vim.g.foo, 5)
-      assert.isEqual(helpers.getLine(), 'abcdef')
+      assert.is_equal(vim.g.foo, 5)
+      assert.is_equal(helpers.get_line(), 'abcdef')
       helpers.rinput("dl<esc>")
-      assert.isEqual(helpers.getLine(), 'abdef')
-      helpers.setLines({
+      assert.is_equal(helpers.get_line(), 'abdef')
+      helpers.set_lines({
         "abcdef"
       })
       helpers.input("0fc")
-      vimp.addChordCancellations('n', 'd')
+      vimp.add_chord_cancellations('n', 'd')
       helpers.rinput("dl<esc>")
-      return assert.isEqual(helpers.getLine(), 'abcdef')
+      return assert.is_equal(helpers.get_line(), 'abcdef')
     end
   }
   _base_0.__index = _base_0

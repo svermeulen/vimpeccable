@@ -1,30 +1,30 @@
 
 assert = require("vimp.util.assert")
-stringUtil = require("vimp.util.string")
+string_util = require("vimp.util.string")
 
 class Helpers
   -- recursive input
   rinput: (keys) ->
-    rawKeys = vim.api.nvim_replace_termcodes(keys, true, false, true)
-    vim.api.nvim_feedkeys(rawKeys, 'mx', false)
+    raw_keys = vim.api.nvim_replace_termcodes(keys, true, false, true)
+    vim.api.nvim_feedkeys(raw_keys, 'mx', false)
 
   -- non recursive input
   input: (keys) ->
-    rawKeys = vim.api.nvim_replace_termcodes(keys, true, false, true)
-    vim.api.nvim_feedkeys(rawKeys, 'nx', false)
+    raw_keys = vim.api.nvim_replace_termcodes(keys, true, false, true)
+    vim.api.nvim_feedkeys(raw_keys, 'nx', false)
 
-  getCursorColumn: ->
+  get_cursor_column: ->
     pos = vim.api.nvim_win_get_cursor(vim.api.nvim_get_current_win())
     return pos[2]
 
-  getCursorCharacter: ->
-    return stringUtil.charAt(Helpers.getLine!, Helpers.getCursorColumn! + 1)
+  get_cursor_character: ->
+    return string_util.char_at(Helpers.get_line!, Helpers.get_cursor_column! + 1)
 
-  setLines: (lines) ->
-    bufferHandle = vim.api.nvim_get_current_buf()
-    vim.api.nvim_buf_set_lines(bufferHandle, 0, -1, false, lines)
+  set_lines: (lines) ->
+    buffer_handle = vim.api.nvim_get_current_buf()
+    vim.api.nvim_buf_set_lines(buffer_handle, 0, -1, false, lines)
 
-  getLine: ->
+  get_line: ->
     return vim.api.nvim_get_current_line()
 
   unlet: (name) ->
@@ -34,7 +34,7 @@ class Helpers
     if vim.g[name] != nil
       vim.g[name] = nil
 
-  hasSameContents: (list1, list2) ->
+  has_same_contents: (list1, list2) ->
     if #list1 != #list2
       return false
 
@@ -46,6 +46,6 @@ class Helpers
 
     return true
 
-  assertSameContents: (list1, list2) ->
-    assert.that(Helpers.hasSameContents(list1, list2), "Expected '#{vim.inspect(list1)}' to equal '#{vim.inspect(list2)}'")
+  assert_same_contents: (list1, list2) ->
+    assert.that(Helpers.has_same_contents(list1, list2), "Expected '#{vim.inspect(list1)}' to equal '#{vim.inspect(list2)}'")
 

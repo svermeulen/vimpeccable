@@ -4,36 +4,36 @@ local FileLogStream
 do
   local _class_0
   local _base_0 = {
-    initialize = function(self, minLogLevel, logPath)
-      logPath = vim.fn.expand(logPath)
-      self._minLogLevel = minLogLevel
-      assert.that(self._minLogLevel)
-      local file = io.open(logPath, "a")
-      assert.that(file, "Could not open log file '" .. tostring(logPath) .. "'")
+    initialize = function(self, min_log_level, log_path)
+      log_path = vim.fn.expand(log_path)
+      self._min_log_level = min_log_level
+      assert.that(self._min_log_level)
+      local file = io.open(log_path, "a")
+      assert.that(file, "Could not open log file '" .. tostring(log_path) .. "'")
       file:setvbuf("line")
-      self._fileStream = file
+      self._file_stream = file
       vim.api.nvim_command([[augroup vimpFileLogStream]])
       vim.api.nvim_command([[au!]])
-      vim.api.nvim_command([[au VimLeavePre * lua _vimp._fileLogStream:dispose()]])
+      vim.api.nvim_command([[au VimLeavePre * lua _vimp._file_log_stream:dispose()]])
       vim.api.nvim_command([[augroup END]])
-      self._fileStream:write("Log file initialized\n")
-      return self._fileStream:flush()
+      self._file_stream:write("Log file initialized\n")
+      return self._file_stream:flush()
     end,
     dispose = function(self)
-      self._fileStream:write("Closing log file!\n")
-      self._fileStream:flush()
-      return self._fileStream:close()
+      self._file_stream:write("Closing log file!\n")
+      self._file_stream:flush()
+      return self._file_stream:close()
     end,
     log = function(self, message, level)
-      if level >= self._minLogLevel then
-        return self._fileStream:write(tostring(log.levels.strings[level]) .. "\t" .. tostring(message) .. "\n")
+      if level >= self._min_log_level then
+        return self._file_stream:write(tostring(log.levels.strings[level]) .. "\t" .. tostring(message) .. "\n")
       end
     end
   }
   _base_0.__index = _base_0
   _class_0 = setmetatable({
     __init = function(self)
-      self._fileStream = nil
+      self._file_stream = nil
     end,
     __base = _base_0,
     __name = "FileLogStream"

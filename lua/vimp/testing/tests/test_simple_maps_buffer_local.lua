@@ -7,7 +7,7 @@ local Tester
 do
   local _class_0
   local _base_0 = {
-    _execInTemporaryBuffer = function(self, func)
+    _exec_in_temporary_buffer = function(self, func)
       local startBuffer = vim.api.nvim_get_current_buf()
       local tempBuffer = vim.api.nvim_create_buf(true, false)
       vim.cmd("b " .. tostring(tempBuffer))
@@ -15,90 +15,90 @@ do
       vim.cmd("b " .. tostring(startBuffer))
       return vim.cmd("bd! " .. tostring(tempBuffer))
     end,
-    testForceKillBufferBeforeUnmap = function(self)
-      self:_execInTemporaryBuffer(function()
+    test_force_kill_buffer_before_unmap = function(self)
+      self:_exec_in_temporary_buffer(function()
         vimp.nnoremap({
           'buffer'
         }, TestKeys, [[:let g:foo = 5<cr>]])
-        return assert.isEqual(vimp.totalNumMaps, 1)
+        return assert.is_equal(vimp.total_num_maps, 1)
       end)
-      return assert.isEqual(vimp.totalNumMaps, 0)
+      return assert.is_equal(vimp.total_num_maps, 0)
     end,
-    testNnoremap = function(self)
+    test_nnoremap = function(self)
       helpers.unlet('foo')
       vimp.nnoremap({
         'buffer'
       }, TestKeys, [[:let g:foo = 5<cr>]])
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys)
-      assert.isEqual(vim.g.foo, 5)
+      assert.is_equal(vim.g.foo, 5)
       helpers.unlet('foo')
-      return self:_execInTemporaryBuffer(function()
+      return self:_exec_in_temporary_buffer(function()
         helpers.rinput(TestKeys)
-        return assert.isEqual(vim.g.foo, nil)
+        return assert.is_equal(vim.g.foo, nil)
       end)
     end,
-    testInoremap = function(self)
+    test_inoremap = function(self)
       vimp.inoremap({
         'buffer'
       }, TestKeys, 'foo')
       helpers.rinput("i" .. tostring(TestKeys))
-      assert.isEqual(helpers.getLine(), 'foo')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(helpers.get_line(), 'foo')
+      return self:_exec_in_temporary_buffer(function()
         helpers.rinput(TestKeys)
-        return assert.isEqual(helpers.getLine(), '')
+        return assert.is_equal(helpers.get_line(), '')
       end)
     end,
-    testXnoremap = function(self)
+    test_xnoremap = function(self)
       vimp.xnoremap({
         'buffer'
       }, TestKeys, 'cfoo')
       local setupBuffer
       setupBuffer = function()
         helpers.input("istart middle end<esc>")
-        assert.isEqual(helpers.getLine(), 'start middle end')
+        assert.is_equal(helpers.get_line(), 'start middle end')
         helpers.input("Fmviw")
         return helpers.rinput(TestKeys)
       end
       setupBuffer()
-      assert.isEqual(helpers.getLine(), 'start foo end')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(helpers.get_line(), 'start foo end')
+      return self:_exec_in_temporary_buffer(function()
         setupBuffer()
-        return assert.isEqual(helpers.getLine(), 'start middle end')
+        return assert.is_equal(helpers.get_line(), 'start middle end')
       end)
     end,
-    testSnoremap = function(self)
+    test_snoremap = function(self)
       vimp.snoremap({
         'buffer'
       }, TestKeys, 'foo')
       local setupBuffer
       setupBuffer = function()
         helpers.input("istart mid end<esc>")
-        assert.isEqual(helpers.getLine(), 'start mid end')
+        assert.is_equal(helpers.get_line(), 'start mid end')
         helpers.input("Fmgh<right><right>")
         return helpers.rinput(TestKeys)
       end
       setupBuffer()
-      assert.isEqual(helpers.getLine(), 'start foo end')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(helpers.get_line(), 'start foo end')
+      return self:_exec_in_temporary_buffer(function()
         setupBuffer()
-        return assert.isEqual(helpers.getLine(), 'start mid end')
+        return assert.is_equal(helpers.get_line(), 'start mid end')
       end)
     end,
-    testCnoremap = function(self)
+    test_cnoremap = function(self)
       vimp.cnoremap({
         'buffer'
       }, TestKeys, 'foo')
       helpers.unlet('foo')
       helpers.rinput(":let g:foo='" .. tostring(TestKeys) .. "'<cr>")
-      assert.isEqual(vim.g.foo, 'foo')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(vim.g.foo, 'foo')
+      return self:_exec_in_temporary_buffer(function()
         helpers.unlet('foo')
         helpers.rinput(":let g:foo='" .. tostring(TestKeys) .. "'<cr>")
-        return assert.isEqual(vim.g.foo, TestKeys)
+        return assert.is_equal(vim.g.foo, TestKeys)
       end)
     end,
-    testOnoremap = function(self)
+    test_onoremap = function(self)
       vimp.onoremap({
         'buffer'
       }, TestKeys, 'aw')
@@ -108,97 +108,97 @@ do
         return helpers.rinput("d" .. tostring(TestKeys))
       end
       setup()
-      assert.isEqual(helpers.getLine(), 'start end')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(helpers.get_line(), 'start end')
+      return self:_exec_in_temporary_buffer(function()
         setup()
-        return assert.isEqual(helpers.getLine(), 'start mid end')
+        return assert.is_equal(helpers.get_line(), 'start mid end')
       end)
     end,
-    testNmap = function(self)
+    test_nmap = function(self)
       helpers.unlet('foo')
       vimp.nmap({
         'buffer'
       }, TestKeys, [[:let g:foo = 5<cr>]])
-      assert.isEqual(vim.g.foo, nil)
+      assert.is_equal(vim.g.foo, nil)
       helpers.rinput(TestKeys)
-      assert.isEqual(vim.g.foo, 5)
+      assert.is_equal(vim.g.foo, 5)
       helpers.unlet('foo')
-      return self:_execInTemporaryBuffer(function()
+      return self:_exec_in_temporary_buffer(function()
         helpers.rinput(TestKeys)
-        return assert.isEqual(vim.g.foo, nil)
+        return assert.is_equal(vim.g.foo, nil)
       end)
     end,
-    testImap = function(self)
+    test_imap = function(self)
       vimp.imap({
         'buffer'
       }, TestKeys, 'foo')
       helpers.rinput("i" .. tostring(TestKeys))
-      assert.isEqual(helpers.getLine(), 'foo')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(helpers.get_line(), 'foo')
+      return self:_exec_in_temporary_buffer(function()
         helpers.rinput("i" .. tostring(TestKeys) .. "<esc>")
-        return assert.isEqual(helpers.getLine(), TestKeys)
+        return assert.is_equal(helpers.get_line(), TestKeys)
       end)
     end,
-    testXmap = function(self)
+    test_xmap = function(self)
       vimp.xmap({
         'buffer'
       }, TestKeys, 'cfoo')
       local setup
       setup = function()
         helpers.input("istart middle end<esc>")
-        assert.isEqual(helpers.getLine(), 'start middle end')
+        assert.is_equal(helpers.get_line(), 'start middle end')
         helpers.input("Fmviw")
         return helpers.rinput(TestKeys)
       end
       setup()
-      assert.isEqual(helpers.getLine(), 'start foo end')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(helpers.get_line(), 'start foo end')
+      return self:_exec_in_temporary_buffer(function()
         setup()
-        return assert.isEqual(helpers.getLine(), "start middle end")
+        return assert.is_equal(helpers.get_line(), "start middle end")
       end)
     end,
-    testSmap = function(self)
+    test_smap = function(self)
       vimp.smap({
         'buffer'
       }, TestKeys, 'foo')
       local setup
       setup = function()
         helpers.input("istart mid end<esc>")
-        assert.isEqual(helpers.getLine(), 'start mid end')
+        assert.is_equal(helpers.get_line(), 'start mid end')
         helpers.input("Fmgh<right><right>")
         return helpers.rinput(TestKeys)
       end
       setup()
-      assert.isEqual(helpers.getLine(), 'start foo end')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(helpers.get_line(), 'start foo end')
+      return self:_exec_in_temporary_buffer(function()
         setup()
-        return assert.isEqual(helpers.getLine(), 'start mid end')
+        return assert.is_equal(helpers.get_line(), 'start mid end')
       end)
     end,
-    testCmap = function(self)
+    test_cmap = function(self)
       vimp.cmap({
         'buffer'
       }, TestKeys, 'foo')
       helpers.unlet('foo')
       helpers.rinput(":let g:foo='" .. tostring(TestKeys) .. "'<cr>")
-      assert.isEqual(vim.g.foo, 'foo')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(vim.g.foo, 'foo')
+      return self:_exec_in_temporary_buffer(function()
         helpers.unlet('foo')
         helpers.rinput(":let g:foo='" .. tostring(TestKeys) .. "'<cr>")
-        return assert.isEqual(vim.g.foo, TestKeys)
+        return assert.is_equal(vim.g.foo, TestKeys)
       end)
     end,
-    testOmap = function(self)
+    test_omap = function(self)
       vimp.omap({
         'buffer'
       }, TestKeys, 'iw')
       helpers.input("istart mid end<esc>Fm")
       helpers.rinput("d" .. tostring(TestKeys))
-      assert.isEqual(helpers.getLine(), 'start  end')
-      return self:_execInTemporaryBuffer(function()
+      assert.is_equal(helpers.get_line(), 'start  end')
+      return self:_exec_in_temporary_buffer(function()
         helpers.input("istart mid end<esc>Fm")
         helpers.rinput("d" .. tostring(TestKeys))
-        return assert.isEqual(helpers.getLine(), 'start mid end')
+        return assert.is_equal(helpers.get_line(), 'start mid end')
       end)
     end
   }

@@ -5,7 +5,7 @@ do
     startsWith = function(value, prefix)
       return value:sub(1, #prefix) == prefix
     end,
-    endsWith = function(value, suffix)
+    ends_with = function(value, suffix)
       return value:sub(#value + 1 - #suffix) == suffix
     end,
     split = function(value, sep)
@@ -28,19 +28,19 @@ do
       end
       return result
     end,
-    charAt = function(value, index)
+    char_at = function(value, index)
       return value:sub(index, index)
     end,
-    _addEscapeChars = function(value)
+    _add_escape_chars = function(value)
       value = value:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%0")
       return value
     end,
-    indexOf = function(haystack, needle)
-      local result = haystack:find(String._addEscapeChars(needle))
+    index_of = function(haystack, needle)
+      local result = haystack:find(String._add_escape_chars(needle))
       return result
     end,
     replace = function(value, old, new)
-      return value:gsub(String._addEscapeChars(old), new)
+      return value:gsub(String._add_escape_chars(old), new)
     end
   }
   _base_0.__index = _base_0

@@ -1,11 +1,11 @@
 local assert = require("vimp.util.assert")
 local log = require("vimp.util.log")
-local tableUtil = require("vimp.util.table")
-local stringUtil = require("vimp.util.string")
+local table_util = require("vimp.util.table")
+local string_util = require("vimp.util.string")
 local util = require("vimp.util.util")
 local MapInfo = require("vimp.map_info")
 local CommandMapInfo = require("vimp.command_map_info")
-local createVimpErrorWrapper = require("vimp.error_wrapper")
+local create_vimp_error_wrapper = require("vimp.error_wrapper")
 local UniqueTrie = require("vimp.unique_trie")
 local FileLogStream = require("vimp.util.file_log_stream")
 local ExtraOptions = {
@@ -35,49 +35,49 @@ do
 end
 local MapErrorStrategies = {
   silent = 1,
-  logMessage = 2,
-  logMinimalUserStackTrace = 3,
-  logUserStackTrace = 4,
-  logFullStackTrace = 5,
-  rethrowMessage = 6,
+  log_message = 2,
+  log_minimal_user_stack_trace = 3,
+  log_user_stack_trace = 4,
+  log_full_stack_trace = 5,
+  rethrow_message = 6,
   none = 7
 }
 local Vimp
 do
   local _class_0
   local _base_0 = {
-    _setPrintMinLogLevel = function(self, minLogLevel)
-      log.printLogStream.minLogLevel = log.convertLogLevelStringToLevel(minLogLevel)
+    _set_print_min_log_level = function(self, min_log_level)
+      log.print_log_stream.min_log_level = log.convert_log_level_string_to_level(min_log_level)
     end,
-    enableFileLogging = function(self, minLogLevel, logFilePath)
-      assert.that(self._fileLogStream == nil)
-      self._fileLogStream = FileLogStream()
-      self._fileLogStream:initialize(log.convertLogLevelStringToLevel(minLogLevel), logFilePath)
-      return table.insert(log.streams, self._fileLogStream)
+    enable_file_logging = function(self, min_log_level, log_file_path)
+      assert.that(self._file_log_stream == nil)
+      self._file_log_stream = FileLogStream()
+      self._file_log_stream:initialize(log.convert_log_level_string_to_level(min_log_level), log_file_path)
+      return table.insert(log.streams, self._file_log_stream)
     end,
-    showAllMaps = function(self, mode)
-      return self:showMaps('', mode)
+    show_all_maps = function(self, mode)
+      return self:show_maps('', mode)
     end,
-    _isCancellationMap = function(self, map)
-      return map.rhs == '<nop>' and stringUtil.endsWith(map.lhs, '<esc>')
+    _is_cancellation_map = function(self, map)
+      return map.rhs == '<nop>' and string_util.ends_with(map.lhs, '<esc>')
     end,
-    showMaps = function(self, prefix, mode)
+    show_maps = function(self, prefix, mode)
       mode = mode or 'n'
-      assert.that(tableUtil.contains(AllModes, mode), "Invalid mode provided '" .. tostring(mode) .. "'")
+      assert.that(table_util.contains(AllModes, mode), "Invalid mode provided '" .. tostring(mode) .. "'")
       local result = { }
-      self._globalTrieByMode[mode]:visitSuffixes(prefix, function(suffix)
-        local mapping = self._globalMapsByModeAndLhs[mode][prefix .. suffix]
+      self._global_trie_by_mode[mode]:visit_suffixes(prefix, function(suffix)
+        local mapping = self._global_maps_by_mode_and_lhs[mode][prefix .. suffix]
         assert.that(mapping)
-        if not self:_isCancellationMap(mapping) then
+        if not self:_is_cancellation_map(mapping) then
           return table.insert(result, mapping)
         end
       end)
-      local bufInfo = self._bufferInfos[vim.api.nvim_get_current_buf()]
-      if bufInfo then
-        bufInfo.triesByMode[mode]:visitSuffixes(prefix, function(suffix)
-          local mapping = bufInfo.mapsByModeAndLhs[mode][prefix .. suffix]
+      local buf_info = self._buffer_infos[vim.api.nvim_get_current_buf()]
+      if buf_info then
+        buf_info.tries_by_mode[mode]:visit_suffixes(prefix, function(suffix)
+          local mapping = buf_info.maps_by_mode_and_lhs[mode][prefix .. suffix]
           assert.that(mapping)
-          if not self:_isCancellationMap(mapping) then
+          if not self:_is_cancellation_map(mapping) then
             return table.insert(result, mapping)
           end
         end)
@@ -91,131 +91,131 @@ do
         end)
         for _index_0 = 1, #result do
           local mapping = result[_index_0]
-          local action = mapping:getRhsDisplayText()
+          local action = mapping:get_rhs_display_text()
           output = output .. tostring(mapping.lhs) .. " -> " .. tostring(action) .. "\n"
         end
       end
       return vim.api.nvim_out_write(output .. '\n')
     end,
-    _getCurrentMapInfo = function(self)
-      return self._mapsInProgress[#self._mapsInProgress]
+    _get_current_map_info = function(self)
+      return self._maps_in_progress[#self._maps_in_progress]
     end,
-    _getMapsInProgress = function(self)
-      return self._mapsInProgress
+    _get_maps_in_progress = function(self)
+      return self._maps_in_progress
     end,
-    _getMapErrorHandlingStrategies = function(self)
+    _get_map_error_handling_strategies = function(self)
       return MapErrorStrategies
     end,
-    _getMapErrorHandlingStrategy = function(self)
-      return self._mapErrorHandlingStrategy
+    _get_map_error_handling_strategy = function(self)
+      return self._map_error_handling_strategy
     end,
-    _setMapErrorHandlingStrategy = function(self, strategy)
+    _set_map_error_handling_strategy = function(self, strategy)
       assert.that(strategy >= 1 and strategy <= 7, "Invalid map error handling strategy '" .. tostring(strategy) .. "'")
-      self._mapErrorHandlingStrategy = strategy
+      self._map_error_handling_strategy = strategy
     end,
-    _observeBufferUnload = function(self)
+    _observe_buffer_unload = function(self)
       vim.api.nvim_command([[augroup vimpBufWatch]])
       vim.api.nvim_command([[au!]])
-      vim.api.nvim_command([[au BufUnload * lua _vimp:_onBufferUnloaded()]])
+      vim.api.nvim_command([[au BufUnload * lua _vimp:_on_buffer_unloaded()]])
       return vim.api.nvim_command([[augroup END]])
     end,
-    _getTotalNumMaps = function(self)
-      local keys = tableUtil.getKeys(self._mapsById)
+    _get_total_num_maps = function(self)
+      local keys = table_util.get_keys(self._maps_by_id)
       return #keys
     end,
-    _removeMapping = function(self, map)
-      map:removeFromVim()
-      self._mapsById[map.id] = nil
-      local modeMaps, trie, trieRaw = self:_getModeMapsAndTrie(map)
-      assert.that(modeMaps[map.lhs] ~= nil)
-      modeMaps[map.lhs] = nil
-      if not map.extraOptions.chord then
-        local success = trie:tryRemove(map.lhs)
+    _remove_mapping = function(self, map)
+      map:remove_from_vim()
+      self._maps_by_id[map.id] = nil
+      local mode_maps, trie, trie_raw = self:_get_mode_maps_and_trie(map)
+      assert.that(mode_maps[map.lhs] ~= nil)
+      mode_maps[map.lhs] = nil
+      if not map.extra_options.chord then
+        local success = trie:try_remove(map.lhs)
         assert.that(success)
-        success = trieRaw:tryRemove(map.rawLhs)
+        success = trie_raw:try_remove(map.raw_lhs)
         return assert.that(success)
       end
     end,
-    _onBufferUnloaded = function(self)
-      local bufferHandle = tonumber(vim.api.nvim_call_function("expand", {
+    _on_buffer_unloaded = function(self)
+      local buffer_handle = tonumber(vim.api.nvim_call_function("expand", {
         "<abuf>"
       }))
-      return self:clearBufferMaps(bufferHandle)
+      return self:clear_buffer_maps(buffer_handle)
     end,
-    _generateNewMappingId = function(self)
-      self._uniqueMapIdCount = self._uniqueMapIdCount + 1
-      return self._uniqueMapIdCount
+    _generate_new_mapping_id = function(self)
+      self._unique_map_id_count = self._unique_map_id_count + 1
+      return self._unique_map_id_count
     end,
-    _validateArgs = function(self, modes, options, extraOptions, lhsList, rhs)
-      assert.that(#lhsList > 0)
+    _validate_args = function(self, modes, options, extra_options, lhs_list, rhs)
+      assert.that(#lhs_list > 0)
       assert.that(#modes > 0, "Zero modes provided")
       assert.that(type(rhs) == 'function' or type(rhs) == 'string', "Expected type 'function' or 'string' for rhs argument but instead found '" .. tostring(type(rhs)) .. "'")
-      for _index_0 = 1, #lhsList do
-        local lhs = lhsList[_index_0]
+      for _index_0 = 1, #lhs_list do
+        local lhs = lhs_list[_index_0]
         assert.that(type(lhs) == 'string', "Expected type string for lhs argument but found '" .. tostring(type(lhs)) .. "'")
       end
       for i = 1, #modes do
         local mode = modes:sub(i, i)
-        assert.that(tableUtil.contains(AllModes, mode), "Invalid mode provided: '" .. tostring(modes) .. "'")
+        assert.that(table_util.contains(AllModes, mode), "Invalid mode provided: '" .. tostring(modes) .. "'")
       end
     end,
-    _convertArgs = function(self, arg1, arg2, arg3, arg4)
-      local modes, optionsList, lhs, rhs
+    _convert_args = function(self, arg1, arg2, arg3, arg4)
+      local modes, options_list, lhs, rhs
       if arg4 ~= nil then
         modes = arg1
-        optionsList = arg2
+        options_list = arg2
         lhs = arg3
         rhs = arg4
       else
         if arg3 ~= nil then
           if type(arg1) == 'table' then
             modes = 'n'
-            optionsList = arg1
+            options_list = arg1
           else
             modes = arg1
-            optionsList = { }
+            options_list = { }
           end
           lhs = arg2
           rhs = arg3
         else
-          optionsList = { }
+          options_list = { }
           modes = 'n'
           lhs = arg1
           rhs = arg2
         end
       end
-      assert.that(type(optionsList) == 'table', "Expected to find an options table but instead found: " .. tostring(optionsList))
+      assert.that(type(options_list) == 'table', "Expected to find an options table but instead found: " .. tostring(options_list))
       if type(lhs) == 'string' then
         lhs = {
           lhs
         }
       end
-      local optionsMap
+      local options_map
       do
         local _tbl_0 = { }
-        for _index_0 = 1, #optionsList do
-          local x = optionsList[_index_0]
+        for _index_0 = 1, #options_list do
+          local x = options_list[_index_0]
           if not ExtraOptions[x] then
             _tbl_0[x] = true
           end
         end
-        optionsMap = _tbl_0
+        options_map = _tbl_0
       end
-      local extraOptionsMap
+      local extra_options_map
       do
         local _tbl_0 = { }
-        for _index_0 = 1, #optionsList do
-          local x = optionsList[_index_0]
+        for _index_0 = 1, #options_list do
+          local x = options_list[_index_0]
           if ExtraOptions[x] then
             _tbl_0[x] = true
           end
         end
-        extraOptionsMap = _tbl_0
+        extra_options_map = _tbl_0
       end
-      return modes, optionsMap, extraOptionsMap, lhs, rhs
+      return modes, options_map, extra_options_map, lhs, rhs
     end,
     _executeCommandMap = function(self, mapId, userArgs)
-      local map = self._commandMapsById[mapId]
+      local map = self._command_maps_by_id[mapId]
       assert.that(map ~= nil)
       local action
       action = function()
@@ -227,170 +227,178 @@ do
       end
     end,
     _executeMap = function(self, mapId)
-      local map = self._mapsById[mapId]
+      local map = self._maps_by_id[mapId]
       assert.that(map ~= nil)
       if not map.options.expr then
         if map.mode == 'x' then
-          util.normalBang('gv')
+          util.normal_bang('gv')
         elseif map.mode == 's' then
-          util.normalBang('gv<c-g>')
+          util.normal_bang('gv<c-g>')
         end
       end
       assert.that(type(map.rhs) == 'function')
-      table.insert(self._mapsInProgress, map)
+      table.insert(self._maps_in_progress, map)
       local success, result = xpcall(map.rhs, debug.traceback)
-      assert.that(#self._mapsInProgress > 0)
-      table.remove(self._mapsInProgress)
+      assert.that(#self._maps_in_progress > 0)
+      table.remove(self._maps_in_progress)
       if not success then
         error("Error when executing map '" .. tostring(map.lhs) .. "': " .. tostring(result) .. "\n")
       end
-      if map.extraOptions.repeatable then
+      if map.extra_options.repeatable then
         assert.that(not map.options.expr)
         vim.api.nvim_call_function('repeat#set', {
-          util.replaceSpecialChars(map.lhs)
+          util.replace_special_chars(map.lhs)
         })
       end
       if map.options.expr then
-        return util.replaceSpecialChars(result)
+        return util.replace_special_chars(result)
       end
       return nil
     end,
-    _addToTrieDryRun = function(self, trie, map, mappingMap)
-      assert.that(not map.extraOptions.chord)
-      local succeeded, existingPrefix, exactMatch = trie:tryAdd(map.lhs, true)
+    _addToTrieDryRun = function(self, trie, map, mapping_map)
+      assert.that(not map.extra_options.chord)
+      local succeeded, existing_prefix, exact_match = trie:try_add(map.lhs, true)
       if succeeded then
         return true
       end
-      assert.that(not exactMatch)
-      local conflictMapInfos = { }
-      if #existingPrefix < #map.lhs then
-        local currentInfo = mappingMap[existingPrefix]
-        assert.that(currentInfo)
-        table.insert(conflictMapInfos, currentInfo)
+      assert.that(not exact_match)
+      local conflict_map_infos = { }
+      if #existing_prefix < #map.lhs then
+        local current_info = mapping_map[existing_prefix]
+        assert.that(current_info)
+        table.insert(conflict_map_infos, current_info)
       else
-        assert.that(#existingPrefix == #map.lhs)
-        trie:visitSuffixes(map.lhs, function(suffix)
-          local currentInfo = mappingMap[map.lhs .. suffix]
-          assert.that(currentInfo)
-          return table.insert(conflictMapInfos, currentInfo)
+        assert.that(#existing_prefix == #map.lhs)
+        trie:visit_suffixes(map.lhs, function(suffix)
+          local current_info = mapping_map[map.lhs .. suffix]
+          assert.that(current_info)
+          return table.insert(conflict_map_infos, current_info)
         end)
       end
-      local conflictOutput = stringUtil.join("\n", (function()
+      local conflict_output = string_util.join("\n", (function()
         local _accum_0 = { }
         local _len_0 = 1
-        for _index_0 = 1, #conflictMapInfos do
-          local x = conflictMapInfos[_index_0]
-          _accum_0[_len_0] = "    " .. tostring(x:toString())
+        for _index_0 = 1, #conflict_map_infos do
+          local x = conflict_map_infos[_index_0]
+          _accum_0[_len_0] = "    " .. tostring(x:to_string())
           _len_0 = _len_0 + 1
         end
         return _accum_0
       end)())
-      return error("Map conflict found when attempting to add map:\n    " .. tostring(map:toString()) .. "\nConflicts:\n" .. tostring(conflictOutput))
+      return error("Map conflict found when attempting to add map:\n    " .. tostring(map:to_string()) .. "\nConflicts:\n" .. tostring(conflict_output))
     end,
-    _newBufInfo = function(self)
-      local bufInfo = {
-        mapsByModeAndLhs = { },
-        triesByMode = { },
-        triesRawByMode = { }
+    _new_buf_info = function(self)
+      local buf_info = {
+        maps_by_mode_and_lhs = { },
+        tries_by_mode = { },
+        tries_raw_by_mode = { }
       }
       for _index_0 = 1, #AllModes do
         local m = AllModes[_index_0]
-        bufInfo.mapsByModeAndLhs[m] = { }
-        bufInfo.triesByMode[m] = UniqueTrie()
-        bufInfo.triesRawByMode[m] = UniqueTrie()
+        buf_info.maps_by_mode_and_lhs[m] = { }
+        buf_info.tries_by_mode[m] = UniqueTrie()
+        buf_info.tries_raw_by_mode[m] = UniqueTrie()
       end
-      return bufInfo
+      return buf_info
     end,
-    addChordCancellations = function(self, mode, prefix)
-      assert.that(tableUtil.contains(AllModes, mode), "Invalid mode provided to addChordCancellations '" .. tostring(mode) .. "'")
-      local trieRaw
-      if self._bufferBlockHandle ~= nil then
-        local bufInfo = self._bufferInfos[vim.api.nvim_get_current_buf()]
-        if bufInfo == nil then
+    addChordCancellations = function(self, ...)
+      log.warning("Field 'vimp.addChordCancellations' is deprecated.  Use vimp.add_chord_cancellations instead!")
+      return self:add_chord_cancellations(...)
+    end,
+    add_chord_cancellations = function(self, mode, prefix)
+      assert.that(table_util.contains(AllModes, mode), "Invalid mode provided to add_chord_cancellations '" .. tostring(mode) .. "'")
+      local trie_raw
+      if self._buffer_block_handle ~= nil then
+        local buf_info = self._buffer_infos[vim.api.nvim_get_current_buf()]
+        if buf_info == nil then
           return 
         end
-        trieRaw = bufInfo.triesRawByMode[mode]
+        trie_raw = buf_info.tries_raw_by_mode[mode]
       else
-        trieRaw = self._globalTrieByModeRaw[mode]
+        trie_raw = self._global_trie_by_mode_raw[mode]
       end
-      local prefixRaw = vim.api.nvim_replace_termcodes(prefix, true, false, true)
-      local escapeKey = '<esc>'
-      local escapeKeyRaw = vim.api.nvim_replace_termcodes(escapeKey, true, false, true)
-      local _list_0 = trieRaw:getAllBranches(prefixRaw)
+      local prefix_raw = vim.api.nvim_replace_termcodes(prefix, true, false, true)
+      local escape_key = '<esc>'
+      local escape_key_raw = vim.api.nvim_replace_termcodes(escape_key, true, false, true)
+      local _list_0 = trie_raw:get_all_branches(prefix_raw)
       for _index_0 = 1, #_list_0 do
         local suffix = _list_0[_index_0]
-        if not stringUtil.endsWith(suffix, escapeKey) and not stringUtil.endsWith(suffix, escapeKeyRaw) then
-          self:bind(mode, prefix .. suffix .. escapeKey, '<nop>')
+        if not string_util.ends_with(suffix, escape_key) and not string_util.ends_with(suffix, escape_key_raw) then
+          self:bind(mode, prefix .. suffix .. escape_key, '<nop>')
         end
       end
     end,
-    _getModeMapsAndTrie = function(self, map)
-      if map.bufferHandle ~= nil then
-        local bufInfo = self._bufferInfos[map.bufferHandle]
-        if bufInfo == nil then
-          bufInfo = self:_newBufInfo()
-          self._bufferInfos[map.bufferHandle] = bufInfo
+    _get_mode_maps_and_trie = function(self, map)
+      if map.buffer_handle ~= nil then
+        local buf_info = self._buffer_infos[map.buffer_handle]
+        if buf_info == nil then
+          buf_info = self:_new_buf_info()
+          self._buffer_infos[map.buffer_handle] = buf_info
         end
-        return bufInfo.mapsByModeAndLhs[map.mode], bufInfo.triesByMode[map.mode], bufInfo.triesRawByMode[map.mode]
+        return buf_info.maps_by_mode_and_lhs[map.mode], buf_info.tries_by_mode[map.mode], buf_info.tries_raw_by_mode[map.mode]
       end
-      return self._globalMapsByModeAndLhs[map.mode], self._globalTrieByMode[map.mode], self._globalTrieByModeRaw[map.mode]
+      return self._global_maps_by_mode_and_lhs[map.mode], self._global_trie_by_mode[map.mode], self._global_trie_by_mode_raw[map.mode]
     end,
-    _addMapping = function(self, map)
-      local modeMaps, trie, trieRaw = self:_getModeMapsAndTrie(map)
-      local existingMap = modeMaps[map.lhs]
-      if existingMap then
-        assert.that(map.extraOptions.override, "Found duplicate mapping for keys '" .. tostring(map.lhs) .. "' in mode '" .. tostring(map.mode) .. "'.  Ignoring second attempt.  Current Mapping: " .. tostring(existingMap:getRhsDisplayText()) .. ", New Mapping: " .. tostring(map:getRhsDisplayText()))
-        self:_removeMapping(existingMap)
+    _add_mapping = function(self, map)
+      local mode_maps, trie, trie_raw = self:_get_mode_maps_and_trie(map)
+      local existing_map = mode_maps[map.lhs]
+      if existing_map then
+        assert.that(map.extra_options.override, "Found duplicate mapping for keys '" .. tostring(map.lhs) .. "' in mode '" .. tostring(map.mode) .. "'.  Ignoring second attempt.  Current Mapping: " .. tostring(existing_map:get_rhs_display_text()) .. ", New Mapping: " .. tostring(map:get_rhs_display_text()))
+        self:_remove_mapping(existing_map)
       end
-      local shouldAddToTrie = not map.extraOptions.chord
-      if shouldAddToTrie then
-        self:_addToTrieDryRun(trie, map, modeMaps)
+      local should_add_to_trie = not map.extra_options.chord
+      if should_add_to_trie then
+        self:_addToTrieDryRun(trie, map, mode_maps)
       end
-      map:addToVim()
-      self._mapsById[map.id] = map
-      modeMaps[map.lhs] = map
-      if shouldAddToTrie then
-        local succeeded, existingPrefix, exactMatch = trie:tryAdd(map.lhs)
+      map:add_to_vim()
+      self._maps_by_id[map.id] = map
+      mode_maps[map.lhs] = map
+      if should_add_to_trie then
+        local succeeded, existing_prefix, exact_match = trie:try_add(map.lhs)
         assert.that(succeeded)
-        succeeded, existingPrefix, exactMatch = trieRaw:tryAdd(map.rawLhs)
+        succeeded, existing_prefix, exact_match = trie_raw:try_add(map.raw_lhs)
         return assert.that(succeeded)
       end
     end,
-    _getAliases = function(self)
+    _get_aliases = function(self)
       return self._aliases
     end,
-    addAlias = function(self, alias, replacement)
+    addAlias = function(self, ...)
+      log.warning("Field 'vimp.addAlias' is deprecated.  Use vimp.add_alias instead!")
+      return self:add_alias(...)
+    end,
+    add_alias = function(self, alias, replacement)
       assert.that(not self._aliases[alias], "Found multiple aliases with key '" .. tostring(alias) .. "'")
       self._aliases[alias] = replacement
     end,
-    _applyAliases = function(self, lhs)
+    _apply_aliases = function(self, lhs)
       for k, v in pairs(self._aliases) do
-        lhs = stringUtil.replace(lhs, k, v)
+        lhs = string_util.replace(lhs, k, v)
       end
       return lhs
     end,
-    _createMapInfo = function(self, mode, lhs, rhs, options, extraOptions)
+    _create_map_info = function(self, mode, lhs, rhs, options, extra_options)
       log.debug("Adding " .. tostring(mode) .. " mode map: " .. tostring(lhs))
-      local bufferHandle = self._bufferBlockHandle
-      if extraOptions.buffer then
-        assert.that(bufferHandle == nil, "Do not specify <buffer> option when inside a call to vimp.addBufferMaps")
-        bufferHandle = vim.api.nvim_get_current_buf()
+      local buffer_handle = self._buffer_block_handle
+      if extra_options.buffer then
+        assert.that(buffer_handle == nil, "Do not specify <buffer> option when inside a call to vimp.add_buffer_maps")
+        buffer_handle = vim.api.nvim_get_current_buf()
       end
-      if not extraOptions.override and bufferHandle == nil then
+      if not extra_options.override and buffer_handle == nil then
         options.unique = true
       end
-      if extraOptions.repeatable then
+      if extra_options.repeatable then
         assert.that(not options.expr, "Using <expr> along with <repeatable> is currently not supported")
         assert.that(mode == 'n', "The <repeatable> flag is currently only supported when using 'n' mode")
         if type(rhs) == 'string' then
-          local rhsStr = rhs
-          local rhsStrNoremap = options.noremap
+          local rhs_str = rhs
+          local rhs_str_noremap = options.noremap
           options.noremap = true
           rhs = function()
-            if rhsStrNoremap then
-              return util.normalBang(rhsStr)
+            if rhs_str_noremap then
+              return util.normal_bang(rhs_str)
             else
-              return util.rnormal(rhsStr)
+              return util.rnormal(rhs_str)
             end
           end
         end
@@ -398,23 +406,23 @@ do
       if type(rhs) == 'function' then
         options.silent = true
       end
-      local id = self:_generateNewMappingId()
-      assert.that(self._mapsById[id] == nil)
-      local expandedLhs = self:_applyAliases(lhs)
-      local rawLhs = vim.api.nvim_replace_termcodes(expandedLhs, true, false, true)
-      return MapInfo(id, mode, options, extraOptions, lhs, expandedLhs, rawLhs, rhs, bufferHandle)
+      local id = self:_generate_new_mapping_id()
+      assert.that(self._maps_by_id[id] == nil)
+      local expanded_lhs = self:_apply_aliases(lhs)
+      local raw_lhs = vim.api.nvim_replace_termcodes(expanded_lhs, true, false, true)
+      return MapInfo(id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle)
     end,
     bind = function(self, ...)
-      local modes, options, extraOptions, lhsList, rhs = self:_convertArgs(...)
-      self:_validateArgs(modes, options, extraOptions, lhsList, rhs)
+      local modes, options, extra_options, lhs_list, rhs = self:_convert_args(...)
+      self:_validate_args(modes, options, extra_options, lhs_list, rhs)
       assert.that(options.noremap == nil)
       options.noremap = true
-      for _index_0 = 1, #lhsList do
-        local lhs = lhsList[_index_0]
+      for _index_0 = 1, #lhs_list do
+        local lhs = lhs_list[_index_0]
         for i = 1, #modes do
           local mode = modes:sub(i, i)
-          local map = self:_createMapInfo(mode, lhs, rhs, tableUtil.shallowCopy(options), tableUtil.shallowCopy(extraOptions))
-          self:_addMapping(map)
+          local map = self:_create_map_info(mode, lhs, rhs, table_util.shallow_copy(options), table_util.shallow_copy(extra_options))
+          self:_add_mapping(map)
         end
       end
     end,
@@ -443,15 +451,15 @@ do
       return self:bind('n', ...)
     end,
     rbind = function(self, ...)
-      local modes, options, extraOptions, lhsList, rhs = self:_convertArgs(...)
-      self:_validateArgs(modes, options, extraOptions, lhsList, rhs)
+      local modes, options, extra_options, lhs_list, rhs = self:_convert_args(...)
+      self:_validate_args(modes, options, extra_options, lhs_list, rhs)
       assert.that(options.noremap == nil)
-      for _index_0 = 1, #lhsList do
-        local lhs = lhsList[_index_0]
+      for _index_0 = 1, #lhs_list do
+        local lhs = lhs_list[_index_0]
         for i = 1, #modes do
           local mode = modes:sub(i, i)
-          local map = self:_createMapInfo(mode, lhs, rhs, tableUtil.shallowCopy(options), tableUtil.shallowCopy(extraOptions))
-          self:_addMapping(map)
+          local map = self:_create_map_info(mode, lhs, rhs, table_util.shallow_copy(options), table_util.shallow_copy(extra_options))
+          self:_add_mapping(map)
         end
       end
     end,
@@ -479,110 +487,126 @@ do
     nmap = function(self, ...)
       return self:rbind('n', ...)
     end,
-    clearBufferMaps = function(self, bufferHandle)
-      local bufferMaps
+    clearBufferMaps = function(self, ...)
+      log.warning("Field 'vimp.clearBufferMaps' is deprecated.  Use vimp.clear_buffer_maps instead!")
+      return self:clear_buffer_maps(...)
+    end,
+    clear_buffer_maps = function(self, buffer_handle)
+      local buffer_maps
       do
         local _accum_0 = { }
         local _len_0 = 1
-        for k, x in pairs(self._mapsById) do
-          if x.bufferHandle == bufferHandle then
+        for k, x in pairs(self._maps_by_id) do
+          if x.buffer_handle == buffer_handle then
             _accum_0[_len_0] = x
             _len_0 = _len_0 + 1
           end
         end
-        bufferMaps = _accum_0
+        buffer_maps = _accum_0
       end
-      if #bufferMaps == 0 then
-        assert.that(self._bufferInfos[bufferHandle] == nil)
+      if #buffer_maps == 0 then
+        assert.that(self._buffer_infos[buffer_handle] == nil)
         return 
       end
-      local bufInfo = self._bufferInfos[bufferHandle]
-      assert.that(bufInfo)
+      local buf_info = self._buffer_infos[buffer_handle]
+      assert.that(buf_info)
       local count = 0
-      for _index_0 = 1, #bufferMaps do
-        local map = bufferMaps[_index_0]
-        self:_removeMapping(map)
+      for _index_0 = 1, #buffer_maps do
+        local map = buffer_maps[_index_0]
+        self:_remove_mapping(map)
         count = count + 1
       end
-      self._bufferInfos[bufferHandle] = nil
+      self._buffer_infos[buffer_handle] = nil
     end,
-    unmapAll = function(self)
+    unmapAll = function(self, ...)
+      log.warning("Field 'vimp.unmapAll' is deprecated.  Use vimp.unmap_all instead!")
+      return self:unmap_all(...)
+    end,
+    unmap_all = function(self)
       log.debug("Unmapping all maps")
       local count = 0
-      for _, map in pairs(self._mapsById) do
-        self:_removeMapping(map)
+      for _, map in pairs(self._maps_by_id) do
+        self:_remove_mapping(map)
         count = count + 1
       end
       for _index_0 = 1, #AllModes do
         local mode = AllModes[_index_0]
-        assert.that(#tableUtil.getKeys(self._globalMapsByModeAndLhs[mode]) == 0)
-        assert.that(self._globalTrieByMode[mode]:isEmpty())
-        assert.that(self._globalTrieByModeRaw[mode]:isEmpty())
-        for _, bufInfo in pairs(self._bufferInfos) do
-          assert.that(#tableUtil.getKeys(bufInfo.mapsByModeAndLhs[mode]) == 0)
-          assert.that(bufInfo.triesByMode[mode]:isEmpty())
-          assert.that(bufInfo.triesRawByMode[mode]:isEmpty())
+        assert.that(#table_util.get_keys(self._global_maps_by_mode_and_lhs[mode]) == 0)
+        assert.that(self._global_trie_by_mode[mode]:is_empty())
+        assert.that(self._global_trie_by_mode_raw[mode]:is_empty())
+        for _, buf_info in pairs(self._buffer_infos) do
+          assert.that(#table_util.get_keys(buf_info.maps_by_mode_and_lhs[mode]) == 0)
+          assert.that(buf_info.tries_by_mode[mode]:is_empty())
+          assert.that(buf_info.tries_raw_by_mode[mode]:is_empty())
         end
       end
-      assert.that(#self._mapsById == 0)
-      tableUtil.clear(self._bufferInfos)
-      for _, map in pairs(self._commandMapsById) do
-        map:removeFromVim()
+      assert.that(#self._maps_by_id == 0)
+      table_util.clear(self._buffer_infos)
+      for _, map in pairs(self._command_maps_by_id) do
+        map:remove_from_vim()
       end
-      tableUtil.clear(self._commandMapsById)
-      tableUtil.clear(self._aliases)
+      table_util.clear(self._command_maps_by_id)
+      table_util.clear(self._aliases)
       return log.debug("Successfully unmapped " .. tostring(count) .. " maps")
     end,
-    addBufferMaps = function(self, arg1, arg2)
-      local bufferHandle, func
+    addBufferMaps = function(self, ...)
+      log.warning("Field 'vimp.addBufferMaps' is deprecated.  Use vimp.add_buffer_maps instead!")
+      return self:add_buffer_maps(...)
+    end,
+    add_buffer_maps = function(self, arg1, arg2)
+      local buffer_handle, func
       if arg2 == nil then
-        bufferHandle = vim.api.nvim_get_current_buf()
+        buffer_handle = vim.api.nvim_get_current_buf()
         func = arg1
       else
-        bufferHandle = arg1
+        buffer_handle = arg1
         func = arg2
       end
       assert.that(type(func) == 'function', "Unexpected parameter type given")
-      assert.that(self._bufferBlockHandle == nil, "Already in a call to vimp.addBufferMaps!  Must exit this first before attempting another.")
-      self._bufferBlockHandle = bufferHandle
-      local ok, retVal = pcall(func)
-      assert.isEqual(self._bufferBlockHandle, bufferHandle)
-      self._bufferBlockHandle = nil
+      assert.that(self._buffer_block_handle == nil, "Already in a call to vimp.add_buffer_maps!  Must exit this first before attempting another.")
+      self._buffer_block_handle = buffer_handle
+      local ok, ret_val = pcall(func)
+      assert.is_equal(self._buffer_block_handle, buffer_handle)
+      self._buffer_block_handle = nil
       if not ok then
-        return error(retVal, 2)
+        return error(ret_val, 2)
       end
     end,
-    mapCommand = function(self, name, handler)
-      assert.that(self._bufferBlockHandle == nil, "Buffer local commands are not currently supported")
-      local id = self:_generateNewMappingId()
+    mapCommand = function(self, ...)
+      log.warning("Field 'vimp.mapCommand' is deprecated.  Use vimp.map_command instead!")
+      return self:map_command(...)
+    end,
+    map_command = function(self, name, handler)
+      assert.that(self._buffer_block_handle == nil, "Buffer local commands are not currently supported")
+      local id = self:_generate_new_mapping_id()
       local map = CommandMapInfo(id, handler, name)
-      assert.that(self._commandMapsById[map.id] == nil)
-      map:addToVim()
-      self._commandMapsById[map.id] = map
+      assert.that(self._command_maps_by_id[map.id] == nil)
+      map:add_to_vim()
+      self._command_maps_by_id[map.id] = map
     end
   }
   _base_0.__index = _base_0
   _class_0 = setmetatable({
     __init = function(self)
-      self._mapsById = { }
-      self._mapsInProgress = { }
-      self._commandMapsById = { }
-      self._uniqueMapIdCount = 1
+      self._maps_by_id = { }
+      self._maps_in_progress = { }
+      self._command_maps_by_id = { }
+      self._unique_map_id_count = 1
       self._aliases = { }
-      self._globalMapsByModeAndLhs = { }
-      self._globalTrieByMode = { }
-      self._globalTrieByModeRaw = { }
-      self._bufferInfos = { }
-      self._mapErrorHandlingStrategy = MapErrorStrategies.logMinimalUserStackTrace
-      self._bufferBlockHandle = nil
-      self._fileLogStream = nil
+      self._global_maps_by_mode_and_lhs = { }
+      self._global_trie_by_mode = { }
+      self._global_trie_by_mode_raw = { }
+      self._buffer_infos = { }
+      self._map_error_handling_strategy = MapErrorStrategies.log_minimal_user_stack_trace
+      self._buffer_block_handle = nil
+      self._file_log_stream = nil
       for _index_0 = 1, #AllModes do
         local m = AllModes[_index_0]
-        self._globalMapsByModeAndLhs[m] = { }
-        self._globalTrieByMode[m] = UniqueTrie()
-        self._globalTrieByModeRaw[m] = UniqueTrie()
+        self._global_maps_by_mode_and_lhs[m] = { }
+        self._global_trie_by_mode[m] = UniqueTrie()
+        self._global_trie_by_mode_raw[m] = UniqueTrie()
       end
-      return self:_observeBufferUnload()
+      return self:_observe_buffer_unload()
     end,
     __base = _base_0,
     __name = "Vimp"
@@ -598,5 +622,5 @@ do
   Vimp = _class_0
 end
 _vimp = Vimp()
-vimp = createVimpErrorWrapper()
+vimp = create_vimp_error_wrapper()
 return vimp

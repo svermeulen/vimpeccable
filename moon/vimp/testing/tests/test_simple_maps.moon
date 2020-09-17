@@ -8,90 +8,90 @@ helpers = require("vimp.testing.helpers")
 TestKeys = '<f4>'
 
 class Tester
-  testNnoremap: =>
+  test_nnoremap: =>
     helpers.unlet('foo')
     vimp.nnoremap TestKeys, [[:let g:foo = 5<cr>]]
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys)
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)
 
-  testInoremap: =>
+  test_inoremap: =>
     vimp.inoremap TestKeys, 'foo'
     helpers.rinput("i#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'foo')
+    assert.is_equal(helpers.get_line!, 'foo')
 
-  testXnoremap: =>
+  test_xnoremap: =>
     vimp.xnoremap TestKeys, 'cfoo'
     helpers.input("istart middle end<esc>")
-    assert.isEqual(helpers.getLine!, 'start middle end')
+    assert.is_equal(helpers.get_line!, 'start middle end')
     helpers.input("Fmviw")
     helpers.rinput(TestKeys)
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
 
-  testSnoremap: =>
+  test_snoremap: =>
     vimp.snoremap TestKeys, 'foo'
     helpers.input("istart mid end<esc>")
-    assert.isEqual(helpers.getLine!, 'start mid end')
+    assert.is_equal(helpers.get_line!, 'start mid end')
     helpers.input("Fmgh<right><right>")
     helpers.rinput(TestKeys)
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
 
-  testCnoremap: =>
+  test_cnoremap: =>
     vimp.cnoremap TestKeys, 'foo'
     helpers.unlet('foo')
     helpers.rinput(":let g:foo='#{TestKeys}'<cr>")
-    assert.isEqual(vim.g.foo, 'foo')
+    assert.is_equal(vim.g.foo, 'foo')
 
-  testOnoremap: =>
+  test_onoremap: =>
     vimp.onoremap TestKeys, 'aw'
     helpers.input("istart mid end<esc>Fm")
     helpers.rinput("d#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'start end')
+    assert.is_equal(helpers.get_line!, 'start end')
 
   -- Skip this one because it's tricky to test
   -- Test it manually instead
-  -- testTnoremap: =>
+  -- test_tnoremap: =>
 
-  testNmap: =>
+  test_nmap: =>
     helpers.unlet('foo')
     vimp.nmap TestKeys, [[:let g:foo = 5<cr>]]
-    assert.isEqual(vim.g.foo, nil)
+    assert.is_equal(vim.g.foo, nil)
     helpers.rinput(TestKeys)
-    assert.isEqual(vim.g.foo, 5)
+    assert.is_equal(vim.g.foo, 5)
 
-  testImap: =>
+  test_imap: =>
     vimp.imap TestKeys, 'foo'
     helpers.rinput("i#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'foo')
+    assert.is_equal(helpers.get_line!, 'foo')
 
-  testXmap: =>
+  test_xmap: =>
     vimp.xmap TestKeys, 'cfoo'
     helpers.input("istart middle end<esc>")
-    assert.isEqual(helpers.getLine!, 'start middle end')
+    assert.is_equal(helpers.get_line!, 'start middle end')
     helpers.input("Fmviw")
     helpers.rinput(TestKeys)
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
 
-  testSmap: =>
+  test_smap: =>
     vimp.smap TestKeys, 'foo'
     helpers.input("istart mid end<esc>")
-    assert.isEqual(helpers.getLine!, 'start mid end')
+    assert.is_equal(helpers.get_line!, 'start mid end')
     helpers.input("Fmgh<right><right>")
     helpers.rinput(TestKeys)
-    assert.isEqual(helpers.getLine!, 'start foo end')
+    assert.is_equal(helpers.get_line!, 'start foo end')
 
-  testCmap: =>
+  test_cmap: =>
     vimp.cmap TestKeys, 'foo'
     helpers.unlet('foo')
     helpers.rinput(":let g:foo='#{TestKeys}'<cr>")
-    assert.isEqual(vim.g.foo, 'foo')
+    assert.is_equal(vim.g.foo, 'foo')
 
-  testOmap: =>
+  test_omap: =>
     vimp.omap TestKeys, 'iw'
     helpers.input("istart mid end<esc>Fm")
     helpers.rinput("d#{TestKeys}")
-    assert.isEqual(helpers.getLine!, 'start  end')
+    assert.is_equal(helpers.get_line!, 'start  end')
 
   -- Skip this one because it's tricky to test
   -- Test it manually instead
-  -- testTmap: =>
+  -- test_tmap: =>

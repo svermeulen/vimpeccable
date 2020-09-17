@@ -3,7 +3,7 @@ local MapInfo
 do
   local _class_0
   local _base_0 = {
-    _getActualRhs = function(self)
+    _get_actual_rhs = function(self)
       if type(self.rhs) == 'string' then
         return self.rhs
       end
@@ -22,44 +22,44 @@ do
       end
       return ":<c-u>lua _vimp:_executeMap(" .. tostring(self.id) .. ")<cr>"
     end,
-    getRhsDisplayText = function(self)
+    get_rhs_display_text = function(self)
       if type(self.rhs) == 'string' then
         return self.rhs
       end
       assert.that(type(self.rhs) == 'function')
       return "<lua function " .. tostring(self.id) .. ">"
     end,
-    addToVim = function(self)
-      local actualRhs = self:_getActualRhs()
-      if self.bufferHandle ~= nil then
-        return vim.api.nvim_buf_set_keymap(self.bufferHandle, self.mode, self.expandedLhs, actualRhs, self.options)
+    add_to_vim = function(self)
+      local actualRhs = self:_get_actual_rhs()
+      if self.buffer_handle ~= nil then
+        return vim.api.nvim_buf_set_keymap(self.buffer_handle, self.mode, self.expanded_lhs, actualRhs, self.options)
       else
-        return vim.api.nvim_set_keymap(self.mode, self.expandedLhs, actualRhs, self.options)
+        return vim.api.nvim_set_keymap(self.mode, self.expanded_lhs, actualRhs, self.options)
       end
     end,
-    removeFromVim = function(self)
-      if self.bufferHandle ~= nil then
-        return vim.api.nvim_buf_del_keymap(self.bufferHandle, self.mode, self.expandedLhs)
+    remove_from_vim = function(self)
+      if self.buffer_handle ~= nil then
+        return vim.api.nvim_buf_del_keymap(self.buffer_handle, self.mode, self.expanded_lhs)
       else
-        return vim.api.nvim_del_keymap(self.mode, self.expandedLhs)
+        return vim.api.nvim_del_keymap(self.mode, self.expanded_lhs)
       end
     end,
-    toString = function(self)
-      return "'" .. tostring(self.lhs) .. "' -> '" .. tostring(self:getRhsDisplayText()) .. "'"
+    to_string = function(self)
+      return "'" .. tostring(self.lhs) .. "' -> '" .. tostring(self:get_rhs_display_text()) .. "'"
     end
   }
   _base_0.__index = _base_0
   _class_0 = setmetatable({
-    __init = function(self, id, mode, options, extraOptions, lhs, expandedLhs, rawLhs, rhs, bufferHandle)
+    __init = function(self, id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle)
       self.id = id
       self.lhs = lhs
-      self.expandedLhs = expandedLhs
-      self.rawLhs = rawLhs
+      self.expanded_lhs = expanded_lhs
+      self.raw_lhs = raw_lhs
       self.rhs = rhs
       self.options = options
-      self.extraOptions = extraOptions
+      self.extra_options = extra_options
       self.mode = mode
-      self.bufferHandle = bufferHandle
+      self.buffer_handle = buffer_handle
     end,
     __base = _base_0,
     __name = "MapInfo"

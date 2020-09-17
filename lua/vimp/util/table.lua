@@ -7,7 +7,7 @@ do
         table[key] = nil
       end
     end,
-    getKeys = function(table)
+    get_keys = function(table)
       local _accum_0 = { }
       local _len_0 = 1
       for k, _ in pairs(table) do
@@ -16,14 +16,14 @@ do
       end
       return _accum_0
     end,
-    shallowCopy = function(t)
+    shallow_copy = function(t)
       local t2 = { }
       for k, v in pairs(t) do
         t2[k] = v
       end
       return t2
     end,
-    indexOf = function(list, item)
+    index_of = function(list, item)
       for i = 1, #list do
         if item == list[i] then
           return i
@@ -32,7 +32,7 @@ do
       return -1
     end,
     contains = function(list, item)
-      return Table.indexOf(list, item) ~= -1
+      return Table.index_of(list, item) ~= -1
     end
   }
   _base_0.__index = _base_0
