@@ -62,11 +62,15 @@ do
       return map.rhs == '<nop>' and string_util.ends_with(map.lhs, '<esc>')
     end,
     show_maps = function(self, prefix, mode)
+      local prefixRaw = ''
+      if prefix and #prefix > 0 then
+        prefixRaw = vim.api.nvim_replace_termcodes(prefix, true, false, true)
+      end
       mode = mode or 'n'
       assert.that(table_util.contains(AllModes, mode), "Invalid mode provided '" .. tostring(mode) .. "'")
       local result = { }
-      self._global_trie_by_mode[mode]:visit_suffixes(prefix, function(suffix)
-        local mapping = self._global_maps_by_mode_and_lhs[mode][prefix .. suffix]
+      self._global_trie_by_mode[mode]:visit_suffixes(prefixRaw, function(suffix)
+        local mapping = self._global_maps_by_mode_and_lhs[mode][prefixRaw .. suffix]
         assert.that(mapping)
         if not self:_is_cancellation_map(mapping) then
           return table.insert(result, mapping)
@@ -74,8 +78,8 @@ do
       end)
       local buf_info = self._buffer_infos[vim.api.nvim_get_current_buf()]
       if buf_info then
-        buf_info.tries_by_mode[mode]:visit_suffixes(prefix, function(suffix)
-          local mapping = buf_info.maps_by_mode_and_lhs[mode][prefix .. suffix]
+        buf_info.tries_by_mode[mode]:visit_suffixes(prefixRaw, function(suffix)
+          local mapping = buf_info.maps_by_mode_and_lhs[mode][prefixRaw .. suffix]
           assert.that(mapping)
           if not self:_is_cancellation_map(mapping) then
             return table.insert(result, mapping)
@@ -126,13 +130,11 @@ do
     _remove_mapping = function(self, map)
       map:remove_from_vim()
       self._maps_by_id[map.id] = nil
-      local mode_maps, trie, trie_raw = self:_get_mode_maps_and_trie(map)
-      assert.that(mode_maps[map.lhs] ~= nil)
-      mode_maps[map.lhs] = nil
+      local mode_maps, trie = self:_get_mode_maps_and_trie(map)
+      assert.that(mode_maps[map.raw_lhs] ~= nil)
+      mode_maps[map.raw_lhs] = nil
       if not map.extra_options.chord then
-        local success = trie:try_remove(map.lhs)
-        assert.that(success)
-        success = trie_raw:try_remove(map.raw_lhs)
+        local success = trie:try_remove(map.raw_lhs)
         return assert.that(success)
       end
     end,
@@ -247,7 +249,7 @@ do
       if map.extra_options.repeatable then
         assert.that(not map.options.expr)
         vim.api.nvim_call_function('repeat#set', {
-          util.replace_special_chars(map.lhs)
+          map.raw_lhs
         })
       end
       if map.options.expr then
@@ -257,20 +259,20 @@ do
     end,
     _addToTrieDryRun = function(self, trie, map, mapping_map)
       assert.that(not map.extra_options.chord)
-      local succeeded, existing_prefix, exact_match = trie:try_add(map.lhs, true)
+      local succeeded, existing_prefix, exact_match = trie:try_add(map.raw_lhs, true)
       if succeeded then
         return true
       end
       assert.that(not exact_match)
       local conflict_map_infos = { }
-      if #existing_prefix < #map.lhs then
+      if #existing_prefix < #map.raw_lhs then
         local current_info = mapping_map[existing_prefix]
         assert.that(current_info)
         table.insert(conflict_map_infos, current_info)
       else
-        assert.that(#existing_prefix == #map.lhs)
-        trie:visit_suffixes(map.lhs, function(suffix)
-          local current_info = mapping_map[map.lhs .. suffix]
+        assert.that(#existing_prefix == #map.raw_lhs)
+        trie:visit_suffixes(map.raw_lhs, function(suffix)
+          local current_info = mapping_map[map.raw_lhs .. suffix]
           assert.that(current_info)
           return table.insert(conflict_map_infos, current_info)
         end)
@@ -290,14 +292,12 @@ do
     _new_buf_info = function(self)
       local buf_info = {
         maps_by_mode_and_lhs = { },
-        tries_by_mode = { },
-        tries_raw_by_mode = { }
+        tries_by_mode = { }
       }
       for _index_0 = 1, #AllModes do
         local m = AllModes[_index_0]
         buf_info.maps_by_mode_and_lhs[m] = { }
         buf_info.tries_by_mode[m] = UniqueTrie()
-        buf_info.tries_raw_by_mode[m] = UniqueTrie()
       end
       return buf_info
     end,
@@ -307,20 +307,20 @@ do
     end,
     add_chord_cancellations = function(self, mode, prefix)
       assert.that(table_util.contains(AllModes, mode), "Invalid mode provided to add_chord_cancellations '" .. tostring(mode) .. "'")
-      local trie_raw
+      local trie
       if self._buffer_block_handle ~= nil then
         local buf_info = self._buffer_infos[vim.api.nvim_get_current_buf()]
         if buf_info == nil then
           return 
         end
-        trie_raw = buf_info.tries_raw_by_mode[mode]
+        trie = buf_info.tries_by_mode[mode]
       else
-        trie_raw = self._global_trie_by_mode_raw[mode]
+        trie = self._global_trie_by_mode[mode]
       end
       local prefix_raw = vim.api.nvim_replace_termcodes(prefix, true, false, true)
       local escape_key = '<esc>'
       local escape_key_raw = vim.api.nvim_replace_termcodes(escape_key, true, false, true)
-      local _list_0 = trie_raw:get_all_branches(prefix_raw)
+      local _list_0 = trie:get_all_branches(prefix_raw)
       for _index_0 = 1, #_list_0 do
         local suffix = _list_0[_index_0]
         if not string_util.ends_with(suffix, escape_key) and not string_util.ends_with(suffix, escape_key_raw) then
@@ -335,13 +335,13 @@ do
           buf_info = self:_new_buf_info()
           self._buffer_infos[map.buffer_handle] = buf_info
         end
-        return buf_info.maps_by_mode_and_lhs[map.mode], buf_info.tries_by_mode[map.mode], buf_info.tries_raw_by_mode[map.mode]
+        return buf_info.maps_by_mode_and_lhs[map.mode], buf_info.tries_by_mode[map.mode]
       end
-      return self._global_maps_by_mode_and_lhs[map.mode], self._global_trie_by_mode[map.mode], self._global_trie_by_mode_raw[map.mode]
+      return self._global_maps_by_mode_and_lhs[map.mode], self._global_trie_by_mode[map.mode]
     end,
     _add_mapping = function(self, map)
-      local mode_maps, trie, trie_raw = self:_get_mode_maps_and_trie(map)
-      local existing_map = mode_maps[map.lhs]
+      local mode_maps, trie = self:_get_mode_maps_and_trie(map)
+      local existing_map = mode_maps[map.raw_lhs]
       if existing_map then
         assert.that(map.extra_options.override, "Found duplicate mapping for keys '" .. tostring(map.lhs) .. "' in mode '" .. tostring(map.mode) .. "'.  Ignoring second attempt.  Current Mapping: " .. tostring(existing_map:get_rhs_display_text()) .. ", New Mapping: " .. tostring(map:get_rhs_display_text()))
         self:_remove_mapping(existing_map)
@@ -352,11 +352,9 @@ do
       end
       map:add_to_vim()
       self._maps_by_id[map.id] = map
-      mode_maps[map.lhs] = map
+      mode_maps[map.raw_lhs] = map
       if should_add_to_trie then
-        local succeeded, existing_prefix, exact_match = trie:try_add(map.lhs)
-        assert.that(succeeded)
-        succeeded, existing_prefix, exact_match = trie_raw:try_add(map.raw_lhs)
+        local succeeded, existing_prefix, exact_match = trie:try_add(map.raw_lhs)
         return assert.that(succeeded)
       end
     end,
@@ -533,11 +531,9 @@ do
         local mode = AllModes[_index_0]
         assert.that(#table_util.get_keys(self._global_maps_by_mode_and_lhs[mode]) == 0)
         assert.that(self._global_trie_by_mode[mode]:is_empty())
-        assert.that(self._global_trie_by_mode_raw[mode]:is_empty())
         for _, buf_info in pairs(self._buffer_infos) do
           assert.that(#table_util.get_keys(buf_info.maps_by_mode_and_lhs[mode]) == 0)
           assert.that(buf_info.tries_by_mode[mode]:is_empty())
-          assert.that(buf_info.tries_raw_by_mode[mode]:is_empty())
         end
       end
       assert.that(#self._maps_by_id == 0)
@@ -595,7 +591,6 @@ do
       self._aliases = { }
       self._global_maps_by_mode_and_lhs = { }
       self._global_trie_by_mode = { }
-      self._global_trie_by_mode_raw = { }
       self._buffer_infos = { }
       self._map_error_handling_strategy = MapErrorStrategies.log_minimal_user_stack_trace
       self._buffer_block_handle = nil
@@ -604,7 +599,6 @@ do
         local m = AllModes[_index_0]
         self._global_maps_by_mode_and_lhs[m] = { }
         self._global_trie_by_mode[m] = UniqueTrie()
-        self._global_trie_by_mode_raw[m] = UniqueTrie()
       end
       return self:_observe_buffer_unload()
     end,

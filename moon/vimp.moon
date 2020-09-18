@@ -41,7 +41,6 @@ class Vimp
     @_aliases = {}
     @_global_maps_by_mode_and_lhs = {}
     @_global_trie_by_mode = {}
-    @_global_trie_by_mode_raw = {}
     @_buffer_infos = {}
     @_map_error_handling_strategy = MapErrorStrategies.log_minimal_user_stack_trace
     @_buffer_block_handle = nil
@@ -50,7 +49,6 @@ class Vimp
     for m in *AllModes
       @_global_maps_by_mode_and_lhs[m] = {}
       @_global_trie_by_mode[m] = UniqueTrie()
-      @_global_trie_by_mode_raw[m] = UniqueTrie()
 
     @\_observe_buffer_unload!
 
@@ -72,20 +70,23 @@ class Vimp
     return map.rhs == '<nop>' and string_util.ends_with(map.lhs, '<esc>')
 
   show_maps: (prefix, mode) =>
+    prefixRaw = ''
+    if prefix and #prefix > 0
+      prefixRaw = vim.api.nvim_replace_termcodes(prefix, true, false, true)
     mode = mode or 'n'
     assert.that(table_util.contains(AllModes, mode),
       "Invalid mode provided '#{mode}'")
     result = {}
-    @_global_trie_by_mode[mode]\visit_suffixes prefix, (suffix) ->
-      mapping = @_global_maps_by_mode_and_lhs[mode][prefix .. suffix]
+    @_global_trie_by_mode[mode]\visit_suffixes prefixRaw, (suffix) ->
+      mapping = @_global_maps_by_mode_and_lhs[mode][prefixRaw .. suffix]
       assert.that(mapping)
       if not @\_is_cancellation_map(mapping)
         table.insert(result, mapping)
 
     buf_info = @_buffer_infos[vim.api.nvim_get_current_buf()]
     if buf_info
-      buf_info.tries_by_mode[mode]\visit_suffixes prefix, (suffix) ->
-        mapping = buf_info.maps_by_mode_and_lhs[mode][prefix .. suffix]
+      buf_info.tries_by_mode[mode]\visit_suffixes prefixRaw, (suffix) ->
+        mapping = buf_info.maps_by_mode_and_lhs[mode][prefixRaw .. suffix]
         assert.that(mapping)
         if not @\_is_cancellation_map(mapping)
           table.insert(result, mapping)
@@ -134,16 +135,13 @@ class Vimp
     map\remove_from_vim!
     @_maps_by_id[map.id] = nil
 
-    mode_maps, trie, trie_raw = @\_get_mode_maps_and_trie(map)
+    mode_maps, trie = @\_get_mode_maps_and_trie(map)
 
-    assert.that(mode_maps[map.lhs] != nil)
-    mode_maps[map.lhs] = nil
+    assert.that(mode_maps[map.raw_lhs] != nil)
+    mode_maps[map.raw_lhs] = nil
 
     if not map.extra_options.chord
-      success = trie\try_remove(map.lhs)
-      assert.that(success)
-
-      success = trie_raw\try_remove(map.raw_lhs)
+      success = trie\try_remove(map.raw_lhs)
       assert.that(success)
 
   _on_buffer_unloaded: =>
@@ -247,7 +245,7 @@ class Vimp
 
     if map.extra_options.repeatable
       assert.that(not map.options.expr)
-      vim.api.nvim_call_function('repeat#set', {util.replace_special_chars(map.lhs)})
+      vim.api.nvim_call_function('repeat#set', {map.raw_lhs})
 
     if map.options.expr
       -- This appears to be necessary even though I would expect
@@ -259,7 +257,7 @@ class Vimp
   _addToTrieDryRun: (trie, map, mapping_map) =>
     assert.that(not map.extra_options.chord)
 
-    succeeded, existing_prefix, exact_match = trie\try_add(map.lhs, true)
+    succeeded, existing_prefix, exact_match = trie\try_add(map.raw_lhs, true)
 
     if succeeded
       return true
@@ -269,7 +267,7 @@ class Vimp
 
     conflict_map_infos = {}
 
-    if #existing_prefix < #map.lhs
+    if #existing_prefix < #map.raw_lhs
       -- In this case, the existing_prefix must match an actual map
       -- otherwise, the prefix would be a branch and therefore the
       -- add would have succeeded
@@ -277,10 +275,10 @@ class Vimp
       assert.that(current_info)
       table.insert(conflict_map_infos, current_info)
     else
-      assert.that(#existing_prefix == #map.lhs)
+      assert.that(#existing_prefix == #map.raw_lhs)
 
-      trie\visit_suffixes map.lhs, (suffix) ->
-        current_info = mapping_map[map.lhs .. suffix]
+      trie\visit_suffixes map.raw_lhs, (suffix) ->
+        current_info = mapping_map[map.raw_lhs .. suffix]
         assert.that(current_info)
         table.insert(conflict_map_infos, current_info)
 
@@ -288,12 +286,11 @@ class Vimp
     error("Map conflict found when attempting to add map:\n    #{map\to_string!}\nConflicts:\n#{conflict_output}")
 
   _new_buf_info: =>
-    buf_info = {maps_by_mode_and_lhs: {}, tries_by_mode: {}, tries_raw_by_mode: {}}
+    buf_info = {maps_by_mode_and_lhs: {}, tries_by_mode: {}}
 
     for m in *AllModes
       buf_info.maps_by_mode_and_lhs[m] = {}
       buf_info.tries_by_mode[m] = UniqueTrie()
-      buf_info.tries_raw_by_mode[m] = UniqueTrie()
 
     return buf_info
 
@@ -304,21 +301,21 @@ class Vimp
   add_chord_cancellations: (mode, prefix) =>
     assert.that(table_util.contains(AllModes, mode),
       "Invalid mode provided to add_chord_cancellations '#{mode}'")
-    local trie_raw
+    local trie
     if @_buffer_block_handle != nil
       buf_info = @_buffer_infos[vim.api.nvim_get_current_buf()]
       if buf_info == nil
         return
-      trie_raw = buf_info.tries_raw_by_mode[mode]
+      trie = buf_info.tries_by_mode[mode]
     else
-      trie_raw = @_global_trie_by_mode_raw[mode]
+      trie = @_global_trie_by_mode[mode]
     prefix_raw = vim.api.nvim_replace_termcodes(prefix, true, false, true)
     escape_key = '<esc>'
     escape_key_raw = vim.api.nvim_replace_termcodes(escape_key, true, false, true)
 
     -- Note here that we have to use get_all_branches instead of visit_branches because
     -- otherwise we get into an infinite loop
-    for suffix in *trie_raw\get_all_branches(prefix_raw)
+    for suffix in *trie\get_all_branches(prefix_raw)
       -- This check might not be necessary but better to be safe
       if not string_util.ends_with(suffix, escape_key) and not string_util.ends_with(suffix, escape_key_raw)
         -- Suffix here is raw but that should be ok
@@ -332,14 +329,14 @@ class Vimp
         buf_info = @\_new_buf_info!
         @_buffer_infos[map.buffer_handle] = buf_info
 
-      return buf_info.maps_by_mode_and_lhs[map.mode], buf_info.tries_by_mode[map.mode], buf_info.tries_raw_by_mode[map.mode]
+      return buf_info.maps_by_mode_and_lhs[map.mode], buf_info.tries_by_mode[map.mode]
 
-    return @_global_maps_by_mode_and_lhs[map.mode], @_global_trie_by_mode[map.mode], @_global_trie_by_mode_raw[map.mode]
+    return @_global_maps_by_mode_and_lhs[map.mode], @_global_trie_by_mode[map.mode]
 
   _add_mapping: (map) =>
-    mode_maps, trie, trie_raw = @\_get_mode_maps_and_trie(map)
+    mode_maps, trie = @\_get_mode_maps_and_trie(map)
 
-    existing_map = mode_maps[map.lhs]
+    existing_map = mode_maps[map.raw_lhs]
 
     if existing_map
       assert.that(map.extra_options.override,
@@ -368,13 +365,10 @@ class Vimp
     -- (eg. duplicate map)
 
     @_maps_by_id[map.id] = map
-    mode_maps[map.lhs] = map
+    mode_maps[map.raw_lhs] = map
 
     if should_add_to_trie
-      succeeded, existing_prefix, exact_match = trie\try_add(map.lhs)
-      assert.that(succeeded)
-
-      succeeded, existing_prefix, exact_match = trie_raw\try_add(map.raw_lhs)
+      succeeded, existing_prefix, exact_match = trie\try_add(map.raw_lhs)
       assert.that(succeeded)
 
   _get_aliases: =>
@@ -549,12 +543,10 @@ class Vimp
     for mode in *AllModes
       assert.that(#table_util.get_keys(@_global_maps_by_mode_and_lhs[mode]) == 0)
       assert.that(@_global_trie_by_mode[mode]\is_empty!)
-      assert.that(@_global_trie_by_mode_raw[mode]\is_empty!)
 
       for _, buf_info in pairs(@_buffer_infos)
         assert.that(#table_util.get_keys(buf_info.maps_by_mode_and_lhs[mode]) == 0)
         assert.that(buf_info.tries_by_mode[mode]\is_empty!)
-        assert.that(buf_info.tries_raw_by_mode[mode]\is_empty!)
 
     assert.that(#@_maps_by_id == 0)
 
