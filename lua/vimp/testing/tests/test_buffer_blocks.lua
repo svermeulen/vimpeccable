@@ -32,14 +32,14 @@ do
       local startBuffer = vim.api.nvim_get_current_buf()
       local tempBuffer = vim.api.nvim_create_buf(true, false)
       assert.is_equal(startBuffer, vim.api.nvim_get_current_buf())
-      return assert.throws("Already in a call to vimp.add_buffer_maps", function()
-        return vimp.add_buffer_maps(tempBuffer, function()
-          vimp.nnoremap(TestKeys1, [[:let g:foo = 5<cr>]])
-          return vimp.add_buffer_maps(startBuffer, function()
-            return vimp.nnoremap(TestKeys2, [[:let g:foo = 7<cr>]])
-          end)
+      vimp.add_buffer_maps(tempBuffer, function()
+        vimp.nnoremap(TestKeys1, [[:let g:foo = 5<cr>]])
+        return vimp.add_buffer_maps(startBuffer, function()
+          return vimp.nnoremap(TestKeys2, [[:let g:foo = 7<cr>]])
         end)
       end)
+      helpers.rinput(TestKeys1)
+      return assert.is_equal(vim.g.foo, 5)
     end
   }
   _base_0.__index = _base_0

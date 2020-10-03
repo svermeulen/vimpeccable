@@ -32,8 +32,11 @@ class Tester
     startBuffer = vim.api.nvim_get_current_buf()
     tempBuffer = vim.api.nvim_create_buf(true, false)
     assert.is_equal(startBuffer, vim.api.nvim_get_current_buf())
-    assert.throws "Already in a call to vimp.add_buffer_maps", ->
-      vimp.add_buffer_maps tempBuffer, ->
-        vimp.nnoremap TestKeys1, [[:let g:foo = 5<cr>]]
-        vimp.add_buffer_maps startBuffer, ->
-          vimp.nnoremap TestKeys2, [[:let g:foo = 7<cr>]]
+    -- In this case, the second call to add_buffer_maps should just log
+    -- the error and not actually execute the given block
+    vimp.add_buffer_maps tempBuffer, ->
+      vimp.nnoremap TestKeys1, [[:let g:foo = 5<cr>]]
+      vimp.add_buffer_maps startBuffer, ->
+        vimp.nnoremap TestKeys2, [[:let g:foo = 7<cr>]]
+    helpers.rinput(TestKeys1)
+    assert.is_equal(vim.g.foo, 5)
