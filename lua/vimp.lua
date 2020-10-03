@@ -561,11 +561,11 @@ do
       assert.that(type(func) == 'function', "Unexpected parameter type given")
       assert.that(self._buffer_block_handle == nil, "Already in a call to vimp.add_buffer_maps!  Must exit this first before attempting another.")
       self._buffer_block_handle = buffer_handle
-      local ok, ret_val = pcall(func)
+      local ok, ret_val = xpcall(func, debug.traceback)
       assert.is_equal(self._buffer_block_handle, buffer_handle)
       self._buffer_block_handle = nil
       if not ok then
-        return error(ret_val, 2)
+        return log.error("Error when calling 'vimp.add_buffer_maps': " .. tostring(ret_val))
       end
     end,
     mapCommand = function(self, ...)

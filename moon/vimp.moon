@@ -578,12 +578,30 @@ class Vimp
     assert.that(type(func) == 'function', "Unexpected parameter type given")
     assert.that(@_buffer_block_handle == nil, "Already in a call to vimp.add_buffer_maps!  Must exit this first before attempting another.")
     @_buffer_block_handle = buffer_handle
-    ok, ret_val = pcall(func)
+    ok, ret_val = xpcall(func, debug.traceback)
     assert.is_equal(@_buffer_block_handle, buffer_handle)
     @_buffer_block_handle = nil
-
     if not ok
-      error(ret_val, 2)
+      -- In the case of errors, just log the full stack trace and then continue
+      -- 
+      -- Note that an error caught here would not be due to a bad buffer local mapping call,
+      -- since that would be caught and logged without triggering an error()
+      -- An error here would be caused by some bad lua code in between calls to vimp.bind, etc.
+      --
+      -- Note also that we intentionally do not call error() here
+      -- It's tempting to call error() and then let the error_wrapper handle it,
+      -- but this can result in an error with a confusing stack trace that has a lot of
+      -- duplicate entries, since the stack trace given from the xpcall above includes
+      -- everything above this method too.  So if we call error(ret_val), and there's
+      -- another xpcall somewhere above us here, then we'll get duplicates
+      -- And we absolutely have to use pcall/xpcall here so that we can properly reset the
+      -- @_buffer_block_handle value
+      -- 
+      -- Catching the error and logging is also consistent with the other vimp map commands anyway
+      -- Although one thing different here is that we are not using @_map_error_handling_strategy
+      -- but that's ok.  We can consider @_map_error_handling_strategy to specifically be for
+      -- individual bind methods
+      log.error("Error when calling 'vimp.add_buffer_maps': #{ret_val}")
 
   mapCommand: (...) =>
     log.warning("Field 'vimp.mapCommand' is deprecated.  Use vimp.map_command instead!")
