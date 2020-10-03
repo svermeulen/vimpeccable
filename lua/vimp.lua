@@ -244,7 +244,7 @@ do
       assert.that(#self._maps_in_progress > 0)
       table.remove(self._maps_in_progress)
       if not success then
-        error("Error when executing map '" .. tostring(map.lhs) .. "': " .. tostring(result) .. "\n")
+        error("Error when executing map '" .. tostring(map.lhs) .. "':\n" .. tostring(result) .. "\n")
       end
       if map.extra_options.repeatable then
         assert.that(not map.options.expr)

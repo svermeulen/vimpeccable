@@ -241,7 +241,7 @@ class Vimp
 
     if not success
       -- Always rethrow on errors
-      error("Error when executing map '#{map.lhs}': #{result}\n")
+      error("Error when executing map '#{map.lhs}':\n#{result}\n")
 
     if map.extra_options.repeatable
       assert.that(not map.options.expr)
@@ -583,7 +583,7 @@ class Vimp
     @_buffer_block_handle = nil
     if not ok
       -- In the case of errors, just log the full stack trace and then continue
-      -- 
+      --
       -- Note that an error caught here would not be due to a bad buffer local mapping call,
       -- since that would be caught and logged without triggering an error()
       -- An error here would be caused by some bad lua code in between calls to vimp.bind, etc.
@@ -596,7 +596,7 @@ class Vimp
       -- another xpcall somewhere above us here, then we'll get duplicates
       -- And we absolutely have to use pcall/xpcall here so that we can properly reset the
       -- @_buffer_block_handle value
-      -- 
+      --
       -- Catching the error and logging is also consistent with the other vimp map commands anyway
       -- Although one thing different here is that we are not using @_map_error_handling_strategy
       -- but that's ok.  We can consider @_map_error_handling_strategy to specifically be for
