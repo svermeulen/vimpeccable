@@ -148,17 +148,12 @@ do
       self._unique_map_id_count = self._unique_map_id_count + 1
       return self._unique_map_id_count
     end,
-    _validate_args = function(self, modes, options, extra_options, lhs_list, rhs)
+    _validate_args = function(self, options, extra_options, lhs_list, rhs)
       assert.that(#lhs_list > 0)
-      assert.that(#modes > 0, "Zero modes provided")
       assert.that(type(rhs) == 'function' or type(rhs) == 'string', "Expected type 'function' or 'string' for rhs argument but instead found '" .. tostring(type(rhs)) .. "'")
       for _index_0 = 1, #lhs_list do
         local lhs = lhs_list[_index_0]
         assert.that(type(lhs) == 'string', "Expected type string for lhs argument but found '" .. tostring(type(lhs)) .. "'")
-      end
-      for i = 1, #modes do
-        local mode = modes:sub(i, i)
-        assert.that(table_util.contains(AllModes, mode), "Invalid mode provided: '" .. tostring(modes) .. "'")
       end
     end,
     _convert_args = function(self, arg1, arg2, arg3, arg4)
@@ -410,15 +405,34 @@ do
       local raw_lhs = vim.api.nvim_replace_termcodes(expanded_lhs, true, false, true)
       return MapInfo(id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle)
     end,
+    _expand_modes = function(self, modes)
+      assert.that(#modes > 0, "Zero modes provided")
+      local map = { }
+      for i = 1, #modes do
+        local mode = modes:sub(i, i)
+        if mode == 'v' then
+          map['x'] = 1
+          map['s'] = 1
+        elseif mode == 'l' then
+          map['i'] = 1
+          map['c'] = 1
+        else
+          assert.that(table_util.contains(AllModes, mode), "Invalid mode '" .. tostring(mode) .. "' provided in given mode list '" .. tostring(modes) .. "'")
+          map[mode] = 1
+        end
+      end
+      return table_util.get_keys(map)
+    end,
     bind = function(self, ...)
       local modes, options, extra_options, lhs_list, rhs = self:_convert_args(...)
-      self:_validate_args(modes, options, extra_options, lhs_list, rhs)
+      local modeList = self:_expand_modes(modes)
+      self:_validate_args(options, extra_options, lhs_list, rhs)
       assert.that(options.noremap == nil)
       options.noremap = true
       for _index_0 = 1, #lhs_list do
         local lhs = lhs_list[_index_0]
-        for i = 1, #modes do
-          local mode = modes:sub(i, i)
+        for _index_1 = 1, #modeList do
+          local mode = modeList[_index_1]
           local map = self:_create_map_info(mode, lhs, rhs, table_util.shallow_copy(options), table_util.shallow_copy(extra_options))
           self:_add_mapping(map)
         end
@@ -450,12 +464,13 @@ do
     end,
     rbind = function(self, ...)
       local modes, options, extra_options, lhs_list, rhs = self:_convert_args(...)
-      self:_validate_args(modes, options, extra_options, lhs_list, rhs)
+      local modeList = self:_expand_modes(modes)
+      self:_validate_args(options, extra_options, lhs_list, rhs)
       assert.that(options.noremap == nil)
       for _index_0 = 1, #lhs_list do
         local lhs = lhs_list[_index_0]
-        for i = 1, #modes do
-          local mode = modes:sub(i, i)
+        for _index_1 = 1, #modeList do
+          local mode = modeList[_index_1]
           local map = self:_create_map_info(mode, lhs, rhs, table_util.shallow_copy(options), table_util.shallow_copy(extra_options))
           self:_add_mapping(map)
         end

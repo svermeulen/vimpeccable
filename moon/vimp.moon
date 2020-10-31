@@ -152,9 +152,8 @@ class Vimp
     @_unique_map_id_count += 1
     return @_unique_map_id_count
 
-  _validate_args: (modes, options, extra_options, lhs_list, rhs) =>
+  _validate_args: (options, extra_options, lhs_list, rhs) =>
     assert.that(#lhs_list > 0)
-    assert.that(#modes > 0, "Zero modes provided")
 
     assert.that(type(rhs) == 'function' or type(rhs) == 'string',
       "Expected type 'function' or 'string' for rhs argument but instead found '#{type(rhs)}'")
@@ -162,10 +161,6 @@ class Vimp
     for lhs in *lhs_list
       assert.that(type(lhs) == 'string',
         "Expected type string for lhs argument but found '#{type(lhs)}'")
-
-    for i = 1, #modes
-      mode = modes\sub(i, i)
-      assert.that(table_util.contains(AllModes, mode), "Invalid mode provided: '#{modes}'")
 
   -- 4 params = modes, options, lhs, rhs
   -- 3 params = (when string) modes, lhs, rhs
@@ -431,15 +426,33 @@ class Vimp
     return MapInfo(
       id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle)
 
+  _expand_modes: (modes) =>
+    assert.that(#modes > 0, "Zero modes provided")
+    -- Expand the meta-modes like v and l, and also remove duplicates
+    map = {}
+    for i = 1, #modes
+      mode = modes\sub(i, i)
+      if mode == 'v'
+        map['x'] = 1
+        map['s'] = 1
+      elseif mode == 'l'
+        map['i'] = 1
+        map['c'] = 1
+      else
+        assert.that(table_util.contains(AllModes, mode),
+          "Invalid mode '#{mode}' provided in given mode list '#{modes}'")
+        map[mode] = 1
+    return table_util.get_keys(map)
+
   bind: (...) =>
     modes, options, extra_options, lhs_list, rhs = @\_convert_args(...)
+    modeList = @\_expand_modes(modes)
     -- Validate seperately because error_wrapper uses _convert_args
-    @\_validate_args(modes, options, extra_options, lhs_list, rhs)
+    @\_validate_args(options, extra_options, lhs_list, rhs)
     assert.that(options.noremap == nil)
     options.noremap = true
     for lhs in *lhs_list
-      for i = 1, #modes
-        mode = modes\sub(i, i)
+      for mode in *modeList
         map = @\_create_map_info(
           mode, lhs, rhs, table_util.shallow_copy(options), table_util.shallow_copy(extra_options))
         @\_add_mapping(map)
@@ -470,12 +483,12 @@ class Vimp
 
   rbind: (...) =>
     modes, options, extra_options, lhs_list, rhs = @\_convert_args(...)
+    modeList = @\_expand_modes(modes)
     -- Validate seperately because error_wrapper uses _convert_args
-    @\_validate_args(modes, options, extra_options, lhs_list, rhs)
+    @\_validate_args(options, extra_options, lhs_list, rhs)
     assert.that(options.noremap == nil)
     for lhs in *lhs_list
-      for i = 1, #modes
-        mode = modes\sub(i, i)
+      for mode in *modeList
         map = @\_create_map_info(
           mode, lhs, rhs, table_util.shallow_copy(options), table_util.shallow_copy(extra_options))
         @\_add_mapping(map)
