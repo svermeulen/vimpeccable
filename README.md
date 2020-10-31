@@ -67,8 +67,6 @@ vim.cmd('colorscheme gruvbox')
 -- Note that we are using 'vimp' (not 'vim') below to add the maps
 -- vimp is shorthand for vimpeccable
 
-require('vimp')
-
 vimp.nnoremap('<leader>hw', function()
   print('hello')
   print('world')
@@ -112,8 +110,6 @@ vim.cmd('colorscheme gruvbox')
 -- Note that we are using 'vimp' (not 'vim') below to add the maps
 -- vimp is shorthand for vimpeccable
 
-require('vimp')
-
 -- Toggle line numbers
 -- Note here that we are directly mapping a moonscript function
 -- to the <leader>n keys
@@ -143,8 +139,8 @@ To use the example lua vimrc displayed above, you can start by changing your neo
 
 ```vimL
 call plug#begin()
-Plug 'svermeulen/vimpeccable-lua-vimrc-example'
 Plug 'svermeulen/vimpeccable'
+Plug 'svermeulen/vimpeccable-lua-vimrc-example'
 Plug 'morhetz/gruvbox'
 call plug#end()
 ```
@@ -172,8 +168,8 @@ You can also implement your vimrc using any language that compiles to lua, such 
 ```vimL
 call plug#begin()
 Plug 'svermeulen/nvim-moonmaker'
-Plug 'svermeulen/vimpeccable-moonscript-vimrc-example'
 Plug 'svermeulen/vimpeccable'
+Plug 'svermeulen/vimpeccable-moonscript-vimrc-example'
 Plug 'morhetz/gruvbox'
 call plug#end()
 ```
@@ -265,8 +261,8 @@ To show how this is done, let's use the following config in our neovim `init.vim
 
 ```viml
 call plug#begin()
-Plug 'svermeulen/vimpeccable-lua-vimrc-advanced-example'
 Plug 'svermeulen/vimpeccable'
+Plug 'svermeulen/vimpeccable-lua-vimrc-advanced-example'
 Plug 'morhetz/gruvbox'
 call plug#end()
 ```
@@ -274,7 +270,6 @@ call plug#end()
 Here, we're using the `vimpeccable-lua-vimrc-advanced-example` plugin, which contains a map to reload our vimrc.  After replacing your `init.vim` with the above, if you then open nvim, run `:PlugInstall` and then press `<space>ev` you should see the following vimrc file:
 
 ```lua
-require('vimp')
 util = require('vimrc.util')
 
 -- ... 
@@ -310,8 +305,8 @@ Note that an equivalent example for moonscript can also be found by using the fo
 ```viml
 call plug#begin()
 Plug 'svermeulen/nvim-moonmaker'
-Plug 'svermeulen/vimpeccable-moonscript-vimrc-advanced-example'
 Plug 'svermeulen/vimpeccable'
+Plug 'svermeulen/vimpeccable-moonscript-vimrc-advanced-example'
 Plug 'morhetz/gruvbox'
 call plug#end()
 ```
