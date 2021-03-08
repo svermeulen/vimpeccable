@@ -3,7 +3,7 @@ assert = require("vimp.util.assert")
 
 -- Note here that lua does not support unicode and that strings are
 -- ultimately just sequences of bytes
--- For example, lua things that "ПРИВЕТ" has length 12
+-- For example, lua strings like "ПРИВЕТ" have length 12 (moonscript returns 12 for #foo)
 -- This is why we can safely use the string.byte function below
 -- The nodes of the trie won't correspond to actual characters all the
 -- time but I think it will still work
