@@ -49,6 +49,9 @@ do
     _set_print_min_log_level = function(self, min_log_level)
       log.print_log_stream.min_log_level = log.convert_log_level_string_to_level(min_log_level)
     end,
+    _set_map_context_provider = function(self, map_context_provider)
+      self._map_context_provider = map_context_provider
+    end,
     enable_file_logging = function(self, min_log_level, log_file_path)
       assert.that(self._file_log_stream == nil)
       self._file_log_stream = FileLogStream()
@@ -338,7 +341,7 @@ do
       local mode_maps, trie = self:_get_mode_maps_and_trie(map)
       local existing_map = mode_maps[map.raw_lhs]
       if existing_map then
-        assert.that(map.extra_options.override, "Found duplicate mapping for keys '" .. tostring(map.lhs) .. "' in mode '" .. tostring(map.mode) .. "'.  Ignoring second attempt.  Current Mapping: " .. tostring(existing_map:get_rhs_display_text()) .. ", New Mapping: " .. tostring(map:get_rhs_display_text()))
+        assert.that(map.extra_options.override, "Found duplicate mapping for keys '" .. tostring(map.lhs) .. "' in mode '" .. tostring(map.mode) .. "'.  Ignoring second attempt.\nCurrent Mapping: " .. tostring(existing_map:to_string()) .. "\nNew Mapping: " .. tostring(map:to_string()))
         self:_remove_mapping(existing_map)
       end
       local should_add_to_trie = not map.extra_options.chord
@@ -403,7 +406,13 @@ do
       assert.that(self._maps_by_id[id] == nil)
       local expanded_lhs = self:_apply_aliases(lhs)
       local raw_lhs = vim.api.nvim_replace_termcodes(expanded_lhs, true, false, true)
-      return MapInfo(id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle)
+      return MapInfo(id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle, self:_try_get_map_context_info())
+    end,
+    _try_get_map_context_info = function(self)
+      if self._map_context_provider ~= nil then
+        return self:_map_context_provider()
+      end
+      return nil
     end,
     _expand_modes = function(self, modes)
       assert.that(#modes > 0, "Zero modes provided")
@@ -610,6 +619,7 @@ do
       self._map_error_handling_strategy = MapErrorStrategies.log_minimal_user_stack_trace
       self._buffer_block_handle = nil
       self._file_log_stream = nil
+      self._map_context_provider = nil
       for _index_0 = 1, #AllModes do
         local m = AllModes[_index_0]
         self._global_maps_by_mode_and_lhs[m] = { }

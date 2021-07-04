@@ -39,6 +39,7 @@ return ->
   _setters = {
     map_error_handling_strategy: _vimp\_set_map_error_handling_strategy,
     print_min_log_level: _vimp\_set_print_min_log_level,
+    map_context_provider: _vimp\_set_map_context_provider
   }
 
   _getters_deprecated = {

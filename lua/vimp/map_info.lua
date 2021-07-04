@@ -23,11 +23,14 @@ do
       return ":<c-u>lua _vimp:_executeMap(" .. tostring(self.id) .. ")<cr>"
     end,
     get_rhs_display_text = function(self)
+      local result = None
       if type(self.rhs) == 'string' then
-        return self.rhs
+        result = self.rhs
+      else
+        assert.that(type(self.rhs) == 'function')
+        result = "<lua function " .. tostring(self.id) .. ">"
       end
-      assert.that(type(self.rhs) == 'function')
-      return "<lua function " .. tostring(self.id) .. ">"
+      return result
     end,
     add_to_vim = function(self)
       local actualRhs = self:_get_actual_rhs()
@@ -45,12 +48,16 @@ do
       end
     end,
     to_string = function(self)
-      return "'" .. tostring(self.lhs) .. "' -> '" .. tostring(self:get_rhs_display_text()) .. "'"
+      local result = "'" .. tostring(self.lhs) .. "' -> '" .. tostring(self:get_rhs_display_text()) .. "'"
+      if self.context_info ~= nil then
+        result = result .. (" with context: " .. tostring(self.context_info))
+      end
+      return result
     end
   }
   _base_0.__index = _base_0
   _class_0 = setmetatable({
-    __init = function(self, id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle)
+    __init = function(self, id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle, context_info)
       self.id = id
       self.lhs = lhs
       self.expanded_lhs = expanded_lhs
@@ -60,6 +67,7 @@ do
       self.extra_options = extra_options
       self.mode = mode
       self.buffer_handle = buffer_handle
+      self.context_info = context_info
     end,
     __base = _base_0,
     __name = "MapInfo"
