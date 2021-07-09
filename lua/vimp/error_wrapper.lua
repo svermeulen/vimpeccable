@@ -100,6 +100,13 @@ return function()
       return function(...)
         return _fn_0(_base_0, ...)
       end
+    end)(),
+    map_context_provider = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._set_map_context_provider
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
     end)()
   }
   local _getters_deprecated = {

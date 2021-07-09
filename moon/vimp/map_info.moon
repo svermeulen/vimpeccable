@@ -2,7 +2,7 @@
 assert = require("vimp.util.assert")
 
 class MapInfo
-  new: (id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle) =>
+  new: (id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle, context_info) =>
     @id = id
     @lhs = lhs
     @expanded_lhs = expanded_lhs
@@ -12,6 +12,7 @@ class MapInfo
     @extra_options = extra_options
     @mode = mode
     @buffer_handle = buffer_handle
+    @context_info = context_info
 
   _get_actual_rhs: =>
     if type(@rhs) == 'string'
@@ -43,11 +44,15 @@ class MapInfo
     return ":<c-u>lua _vimp:_executeMap(#{@id})<cr>"
 
   get_rhs_display_text: =>
-    if type(@rhs) == 'string'
-      return @rhs
+    result = None
 
-    assert.that(type(@rhs) == 'function')
-    return "<lua function #{@id}>"
+    if type(@rhs) == 'string'
+      result = @rhs
+    else
+      assert.that(type(@rhs) == 'function')
+      result = "<lua function #{@id}>"
+
+    return result
 
   add_to_vim: =>
     actualRhs = @\_get_actual_rhs!
@@ -63,5 +68,11 @@ class MapInfo
       vim.api.nvim_del_keymap(@mode, @expanded_lhs)
 
   to_string: =>
-    return "'#{@lhs}' -> '#{@\get_rhs_display_text!}'"
+    result = "'#{@lhs}' -> '#{@\get_rhs_display_text!}'"
+
+    if @context_info != nil
+      result ..= " with context: " .. tostring(@context_info)
+
+    return result
+
 

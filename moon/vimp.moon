@@ -45,6 +45,7 @@ class Vimp
     @_map_error_handling_strategy = MapErrorStrategies.log_minimal_user_stack_trace
     @_buffer_block_handle = nil
     @_file_log_stream = nil
+    @_map_context_provider = nil
 
     for m in *AllModes
       @_global_maps_by_mode_and_lhs[m] = {}
@@ -54,6 +55,9 @@ class Vimp
 
   _set_print_min_log_level: (min_log_level) =>
     log.print_log_stream.min_log_level = log.convert_log_level_string_to_level(min_log_level)
+
+  _set_map_context_provider: (map_context_provider) =>
+    @_map_context_provider = map_context_provider
 
   enable_file_logging: (min_log_level, log_file_path) =>
     assert.that(@_file_log_stream == nil)
@@ -335,7 +339,7 @@ class Vimp
 
     if existing_map
       assert.that(map.extra_options.override,
-        "Found duplicate mapping for keys '#{map.lhs}' in mode '#{map.mode}'.  Ignoring second attempt.  Current Mapping: #{existing_map\get_rhs_display_text!}, New Mapping: #{map\get_rhs_display_text!}")
+        "Found duplicate mapping for keys '#{map.lhs}' in mode '#{map.mode}'.  Ignoring second attempt.\nCurrent Mapping: #{existing_map\to_string!}\nNew Mapping: #{map\to_string!}")
 
       @\_remove_mapping(existing_map)
 
@@ -424,7 +428,13 @@ class Vimp
     raw_lhs = vim.api.nvim_replace_termcodes(expanded_lhs, true, false, true)
 
     return MapInfo(
-      id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle)
+      id, mode, options, extra_options, lhs, expanded_lhs, raw_lhs, rhs, buffer_handle, @\_try_get_map_context_info())
+
+  _try_get_map_context_info: =>
+    if @_map_context_provider != nil
+      return @_map_context_provider()
+
+    return nil
 
   _expand_modes: (modes) =>
     assert.that(#modes > 0, "Zero modes provided")
