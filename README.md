@@ -3,7 +3,7 @@
 
 ## Write your .vimrc in Lua!
 
-Vimpeccable is a plugin for Neovim that allows you to easily replace your vimscript-based `.vimrc` / `init.vim` with `init.lua` instead.  In particular, Vimpeccable adds to the existing Neovim lua API by adding new lua commands to easily map keys directly to lua code.
+Vimpeccable is a plugin for Neovim that adds a simple lua api to map keys directly to lua code.  This can be used to easily replace your vimscript-based `.vimrc` / `init.vim` with `init.lua` instead.
 
 NOTE: Requires Neovim 0.5+
 
@@ -106,7 +106,7 @@ vim.cmd('colorscheme gruvbox')
 
 For the purposes of this example we use [paq-nvim](https://github.com/savq/paq-nvim) but you are of course free to use whichever plugin manager you prefer.
 
-Then you can open Neovim and execute `:PaqInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world', `<space>ev` to open init.lua, etc.)
+Then you can open Neovim and execute `:PaqInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world', `<space>ev` to open `init.lua`, etc.)
 
 ## Vimpeccable Command Syntax
 
