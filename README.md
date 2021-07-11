@@ -53,7 +53,7 @@ colorscheme gruvbox
 
 When using Neovim 0.5 and Vimpeccable, you could instead write it in lua or any lua-based language as well.  You can do this by creating an `init.lua` file instead of `init.vim` with contents:
 
-```vimL
+```lua
 vim.cmd 'packadd paq-nvim'
 
 local paq = require('paq-nvim').paq
