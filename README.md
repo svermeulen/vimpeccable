@@ -3,15 +3,13 @@
 
 ## Write your .vimrc in Lua!
 
-Vimpeccable is a plugin for Neovim that allows you to easily replace your vimscript-based `.vimrc` / `init.vim` with a lua-based one instead.  Vimpeccable adds to the existing Neovim lua API by adding new lua commands to easily map keys directly to lua.
+Vimpeccable is a plugin for Neovim that allows you to easily replace your vimscript-based `.vimrc` / `init.vim` with `init.lua` instead.  In particular, Vimpeccable adds to the existing Neovim lua API by adding new lua commands to easily map keys directly to lua code.
 
-NOTE: We recommend using the latest [development preview](https://github.com/neovim/neovim/releases/nightly) release of Neovim.  While the plugin itself is compatible with the current Neovim stable release, the example vimrcs shown in this documentation are not.
+NOTE: Requires Neovim 0.5+
 
 ## Table of Contents
 
 * [Quick Start Example](#quick-start-example)
-* [Installation and Usage (lua)](#installation-and-usage-lua)
-* [Installation and Usage (moonscript)](#installation-and-usage-moonscript)
 * [Vimpeccable Command Syntax](#vimpeccable-command-syntax)
 * [Runtime Reloading of Entire Vimrc Plugin](#runtime-reloading-of-entire-vimrc-plugin)
 * [Repeatable Maps](#repeatable-maps)
@@ -22,9 +20,13 @@ NOTE: We recommend using the latest [development preview](https://github.com/neo
 
 ## Quick Start Example
 
-Given the following .vimrc:
+Given the following example .vimrc:
 
 ```vimL
+call plug#begin(stdpath('data') . '/plugged')
+Plug 'morhetz/gruvbox'
+call plug#end()
+
 set ignorecase
 set smartcase
 set incsearch
@@ -49,12 +51,22 @@ nnoremap <leader>ev :vsplit ~/.config/nvim/init.vim<cr>
 colorscheme gruvbox
 ```
 
-When using Vimpeccable, you could instead write it in lua or any lua-based language as well.  For example, you could write it in lua:
+When using Neovim 0.5 and Vimpeccable, you could instead write it in lua or any lua-based language as well.  You can do this by creating an `init.lua` file intead of `init.vim` with contents:
 
-```lua
+```vimL
+vim.cmd 'packadd paq-nvim'
+
+local paq = require('paq-nvim').paq
+paq {'savq/paq-nvim', opt = true}
+
+paq {'morhetz/gruvbox'}
+paq {'svermeulen/vimpeccable'}
+
 vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.incsearch = true
+
+vim.o.hidden = true
 
 vim.o.history = 5000
 
@@ -66,6 +78,7 @@ vim.cmd('colorscheme gruvbox')
 
 -- Note that we are using 'vimp' (not 'vim') below to add the maps
 -- vimp is shorthand for vimpeccable
+local vimp = require('vimp')
 
 vimp.nnoremap('<leader>hw', function()
   print('hello')
@@ -73,8 +86,6 @@ vimp.nnoremap('<leader>hw', function()
 end)
 
 -- Toggle line numbers
--- Note here that we are directly mapping a lua function 
--- to the <leader>n keys
 vimp.nnoremap('<leader>n', function()
   vim.wo.number = not vim.wo.number
 end)
@@ -82,103 +93,20 @@ end)
 -- Keep the cursor in place while joining lines
 vimp.nnoremap('J', 'mzJ`z')
 
-vimp.nnoremap('<leader>ev', [[:vsplit ~/.config/nvim/init.vim<cr>]])
--- Or alternatively:
+vimp.nnoremap('<leader>ev', ':vsplit ~/.config/nvim/init.lua<cr>')
+-- Or:
+-- vimp.nnoremap('<leader>ev', [[:vsplit ~/.config/nvim/init.lua<cr>]])
+-- Or:
 -- vimp.nnoremap('<leader>ev', function()
---   vim.cmd('vsplit ~/.config/nvim/init.vim')
+--   vim.cmd('vsplit ~/.config/nvim/init.lua')
 -- end)
 
 vim.cmd('colorscheme gruvbox')
 ```
 
-Or you could write it in [MoonScript](https://moonscript.org/):
+For the purposes of this example we use [paq-nvim](https://github.com/savq/paq-nvim) but you are of course free to use whichever plugin manager you prefer.
 
-```moonscript
-vim.o.ignorecase = true
-vim.o.smartcase = true
-vim.o.incsearch = true
-
-vim.o.history = 5000
-
-vim.o.tabstop = 4
-vim.o.shiftwidth = vim.o.tabstop
-
-vim.g.mapleader = " "
-
-vim.cmd('colorscheme gruvbox')
-
--- Note that we are using 'vimp' (not 'vim') below to add the maps
--- vimp is shorthand for vimpeccable
-
--- Toggle line numbers
--- Note here that we are directly mapping a moonscript function
--- to the <leader>n keys
-vimp.nnoremap '<leader>n', -> vim.wo.number = not vim.wo.number
-
--- Keep the cursor in place while joining lines
-vimp.nnoremap 'J', 'mzJ`z'
-
-vimp.nnoremap '<leader>hw', ->
-  -- Note that we can easily create multi-line functions here
-  print('hello')
-  print('world')
-
--- Edit the primary vimrc
-vimp.nnoremap '<leader>ev', -> vim.cmd('vsplit ~/.config/nvim/init.vim')
--- This would work too:
--- vimp.nnoremap '<leader>ev', [[:vsplit ~/.config/nvim/init.vim<cr>]]
--- Or this:
--- vimp.nnoremap '<leader>ev', ':vsplit ~/.config/nvim/init.vim<cr>'
-```
-
-You can also use any other lua-based language such as [fennel](https://github.com/jaawerth/fennel-nvim), [Teal](https://github.com/teal-language/tl), etc. in similar fashion.
-
-## Installation and Usage (lua)
-
-To use the example lua vimrc displayed above, you can start by changing your neovim `init.vim` file to the following:
-
-```vimL
-call plug#begin()
-Plug 'svermeulen/vimpeccable'
-Plug 'svermeulen/vimpeccable-lua-vimrc-example'
-Plug 'morhetz/gruvbox'
-call plug#end()
-```
-
-For the purposes of this example we will use [vim-plug](https://github.com/junegunn/vim-plug) but you are of course free to use whichever plugin manager you prefer.
-
-Then you can open Neovim and execute `:PlugInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world')
-
-What we've done here is that we've packaged up our vimrc into a plugin named `vimpeccable-lua-vimrc-example`.  To see how that works, open up the `~/.config/nvim/plugged/vimpeccable-lua-vimrc-example` directory.  You should see two files: `/lua/vimrc.lua` and `/plugin/vimrc.vim`.  If you open up `vimrc.vim` you'll see that all it does is the load `vimrc.lua` like this:
-
-```vimL
-lua require('vimrc')
-```
-
-This file is necessary because Neovim does not have support for a lua based entry point yet, however this [is coming soon](https://github.com/neovim/neovim/pull/8720).  In the meantime, we need to bootstrap our lua based vimrc with this `vimrc.vim` file instead.
-
-Note that the reason this works is because vim will automatically source all `.vim` files found inside the `plugin` directories of each plugin that we've added via `vim-plug` above.  And when executing `lua require('vimrc')`, neovim will look for a file named `vimrc.lua` in all the `lua` directories in each plugin as well.
-
-To view the `vimrc.lua` file, press `<space>ev`. As you can see, this is the same as the quickstart lua config example posted above.
-
-## Installation and Usage (moonscript)
-
-You can also implement your vimrc using any language that compiles to lua, such as [MoonScript](https://moonscript.org/).  You can do this by changing your neovim `init.vim` file to the following:
-
-```vimL
-call plug#begin()
-Plug 'svermeulen/nvim-moonmaker'
-Plug 'svermeulen/vimpeccable'
-Plug 'svermeulen/vimpeccable-moonscript-vimrc-example'
-Plug 'morhetz/gruvbox'
-call plug#end()
-```
-
-Before opening neovim you will also need to make sure that you have [MoonScript](https://moonscript.org/) installed and `moonc` is available on the command line.  Then you can open up neovim, execute `:PlugInstall`, and then you should be able to execute all the same maps from the example (eg. `<space>hw` to print 'hello world')
-
-Note that in this case we added an extra plugin above named `nvim-moonmaker`.  This plugin does the work of lazily compiling our moonscript files to lua, which is necessary because neovim does not support moonscript out of the box.  See the [nvim-moonmaker](https://github.com/svermeulen/nvim-moonmaker) page for more details.
-
-To view the `vimrc.moon` file, press `<space>ev`, which you will see is the same as the quickstart moonscript config example posted above.
+Then you can open Neovim and execute `:PaqInstall`, and then you should be able to execute all the maps from the example (eg. `<space>hw` to print 'hello world', `<space>ev` to open init.lua, etc.)
 
 ## Vimpeccable Command Syntax
 
@@ -257,72 +185,62 @@ For many vimmers, It is common to regularly be making tweaks to your vimrc.
 
 In order to make edits at runtime without requiring a full restart of vim, often what people do is open up their vimrc and then simply execute `:so %` to re-source it.  The lua equivalent of this would be `:luafile %`, however, if we were to attempt this when using vimpeccable we would get errors complaining about duplicate maps.  This is a [feature](#duplicate-map-detection), not a bug, and is helpful to avoid accidentally clobbering existing maps.  But how would we reload our vimpeccable config at runtime then?
 
-To show how this is done, let's use the following config in our neovim `init.vim`:
-
-```viml
-call plug#begin()
-Plug 'svermeulen/vimpeccable'
-Plug 'svermeulen/vimpeccable-lua-vimrc-advanced-example'
-Plug 'morhetz/gruvbox'
-call plug#end()
-```
-
-Here, we're using the `vimpeccable-lua-vimrc-advanced-example` plugin, which contains a map to reload our vimrc.  After replacing your `init.vim` with the above, if you then open nvim, run `:PlugInstall` and then press `<space>ev` you should see the following vimrc file:
+To show how this is done, let's add the following to our `init.lua` from above:
 
 ```lua
-util = require('vimrc.util')
-
--- ... 
--- <snip>
--- ...
-
--- r = reload vimrc plugin
+-- r = reload vimrc
 vimp.nnoremap('<leader>r', function()
   -- Remove all previously added vimpeccable maps
   vimp.unmap_all()
-  -- Unload the lua namespace so that the next time require('vimrc') or require('vimrc.X') is called
+  -- Unload the lua namespace so that the next time require('config.X') is called
   -- it will reload the file
-  -- By default, require() will only load the lua file the first time it is called and thereafter
-  -- pull it from a cache
-  util.unload_lua_namespace('vimrc')
+  require("config.util").unload_lua_namespace('config')
   -- Make sure all open buffers are saved
   vim.cmd('silent wa')
   -- Execute our vimrc lua file again to add back our maps
-  require('vimrc')
+  dofile(vim.fn.stdpath('config') .. '/init.lua')
 
   print("Reloaded vimrc!")
 end)
 ```
 
-To test our new `<leader>r` reload mapping, try changing the `<leader>hw` mapping to print something different, then press `<space>r` and then `<space>hw` to see the new text.
+Let's also add a custom lua namespace, where we can place all our custom Lua that we'll want to reload.  We can do this by:
+- Creating a new directory at `lua/config` next to our `init.lua`
+- Creating a new file in this directory named `util.lua` with contents:
 
-You might also notice that we have a new file inside our `~/.config/nvim/plugged/vimpeccable-lua-vimrc-advanced-example` directory at `/lua/vimrc/util.lua` that we are referencing above with the line `util = require('vimrc.util')`.  As your vimrc grows in complexity, you may want to split it up into multiple files, which we can do quite easily in lua by using the `require` method.
+```lua
+local M = {}
 
-Note that `util.lua` will also be reloaded every time we execute `<space>r`, as well as any other lua file underneath the `vimrc` folder.  See the comments above inside the `<leader>r` mapping for an explanation of what each line does.
+M['unload_lua_namespace'] = function(prefix)
+  local prefix_with_dot = prefix .. '.'
+  for key, value in pairs(package.loaded) do
+    if key == prefix or key:sub(1, #prefix_with_dot) == prefix_with_dot then
+      package.loaded[key] = nil
+    end
+  end
+end
 
-Note that an equivalent example for moonscript can also be found by using the following `init.vim` instead:
-
-```viml
-call plug#begin()
-Plug 'svermeulen/nvim-moonmaker'
-Plug 'svermeulen/vimpeccable'
-Plug 'svermeulen/vimpeccable-moonscript-vimrc-advanced-example'
-Plug 'morhetz/gruvbox'
-call plug#end()
+return M
 ```
+
+Now we can open neovim again and execute `<space>r` to fully reload our config.  The call to `vimp.unmap_all` will remove all the maps that have been added via vimpeccable, and the call to `unload_lua_namespace` will clear all our custom lua code from the lua cache.  If we did not do the `unload_lua_namespace` step, and then changed something inside our `lua/config` directory, then that code would not be reloaded.
+
+To test our new `<leader>r` reload mapping, try changing the `<leader>hw` mapping to print something different, then press `<space>r` and then `<space>hw` to see the new text.  Or, try adding another utility function to `util.lua` and then calling it from a new map, to ensure that code will be updated as well.
+
+As your vimrc grows in complexity, you may want to split it up into multiple files, which we can now do easily in lua by using the `require` method.
 
 ## Repeatable Maps
 
 Vimpeccable can also optionally make custom maps repeatable with the `.` key.  For example, given the following maps:
 
-```viml
+```lua
 vimp.bind('[e', ':move--<cr>')
 vimp.bind(']e', ':move+<cr>')
 ```
 
 You might want to be able to hit `]e..` to move the current line three lines down.  By default this would not work.  You can fix this by making it repeatable by just passing in the `repeatable` option like this:
 
-```viml
+```lua
 vimp.bind({'repeatable'}, '[e', ':move--<cr>')
 vimp.bind({'repeatable'}, ']e', ':move+<cr>')
 ```
@@ -331,7 +249,7 @@ Note that this feature requires that [vim-repeat](https://github.com/tpope/vim-r
 
 ## Duplicate Map Detection
 
-By default, vimpeccable will reject any maps that are already taken.  To see what that looks like, try adding the following map to the same `vimrc.lua` (assuming you're using the `vimpeccable-lua-vimrc-advanced-example` config from above):
+By default, vimpeccable will reject any maps that are already taken.  To see what that looks like, try adding the following map to the same `vimrc.lua` (assuming you're using the config from above):
 
 ```lua
 vimp.bind('<leader>hw', function() print('hi!') end)
@@ -374,7 +292,7 @@ Then every time we execute `<leader>h`, there would be a delay before we see the
 
 If you find yourself using a lot of leader maps, you might notice that it is not possible to cancel a leader operation without sometimes causing unintended side effects.  For example, given the following map:
 
-```viml
+```lua
 vimp.bind('<leader>ddb', function() print("Executed map!") end)
 ```
 
@@ -382,7 +300,7 @@ If you then type `<space>dd` and then hit any key other than `b`, you will find 
 
 You can avoid these problems by adding the following to the bottom of your `vimrc.lua`:
 
-```viml
+```lua
 vimp.add_chord_cancellations('n', '<leader>')
 ```
 
@@ -423,16 +341,6 @@ vimp.add_buffer_maps(bufferId, function()
 end)
 ```
 
-For a full example, install `vimpeccable-lua-vimrc-advanced-example` as explained in the previous section, and then look at the files `/ftplugin/lua.vim` and `/lua/vimrc/ft/lua.lua`.
-
-Or, alternatively, in MoonScript instead of lua:
-
-```lua
-vimp.add_buffer_maps ->
-  vimp.nnoremap '<leader>t1', -> print('lua map!')
-  vimp.nnoremap '<leader>t2', -> print('lua map two!')
-```
-
 ## User Command Maps
 
 In some cases it might be better to define a custom action as a vim command rather than mapping it to a key.  This way we don't use up any open key maps and our custom commands are discoverable on the command line by pressing tab (which can be easier than having to remember whatever leader map we chose). For example, you might want to define the following user commands in vimscript:
@@ -462,16 +370,6 @@ end)
 vimp.map_command('SvRename', function(newName)
   print("Todo - rename current file to " .. newName)
 end)
-```
-
-Or, if using [MoonScript](https://moonscript.org/):
-
-```moonscript
-vimp.map_command 'SvOpenFileOnGithub', ->
-  print("Todo - Open the URL on github for current file on current line")
-
-vimp.map_command 'SvRename', (newName) ->
-  print("Todo - rename current file to " .. newName)
 ```
 
 Note that vimpeccable will automatically fill in the `nargs` value for the command based on the given function signature.
