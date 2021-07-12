@@ -46,6 +46,9 @@ local Vimp
 do
   local _class_0
   local _base_0 = {
+    _get_all_maps = function(self)
+      return self._maps_by_id
+    end,
     _set_print_min_log_level = function(self, min_log_level)
       log.print_log_stream.min_log_level = log.convert_log_level_string_to_level(min_log_level)
     end,

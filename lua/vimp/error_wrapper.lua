@@ -84,6 +84,13 @@ return function()
       return function(...)
         return _fn_0(_base_0, ...)
       end
+    end)(),
+    all_maps = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._get_all_maps
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
     end)()
   }
   local _setters = {
