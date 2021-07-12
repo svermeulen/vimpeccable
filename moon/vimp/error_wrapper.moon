@@ -35,6 +35,7 @@ return ->
     aliases: _vimp\_get_aliases,
     maps_in_progress: _vimp\_get_maps_in_progress,
     current_map_info: _vimp\_get_current_map_info,
+    all_maps: _vimp\_get_all_maps,
   }
   _setters = {
     map_error_handling_strategy: _vimp\_set_map_error_handling_strategy,

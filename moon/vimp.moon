@@ -53,6 +53,9 @@ class Vimp
 
     @\_observe_buffer_unload!
 
+  _get_all_maps: =>
+    return @_maps_by_id
+
   _set_print_min_log_level: (min_log_level) =>
     log.print_log_stream.min_log_level = log.convert_log_level_string_to_level(min_log_level)
 
