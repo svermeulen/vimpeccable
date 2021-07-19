@@ -127,7 +127,7 @@ do
       return self._always_override
     end,
     _set_always_override = function(self, always_override)
-      sv.assert.that(type(always_override) == 'boolean')
+      assert.that(type(always_override) == 'boolean')
       self._always_override = always_override
     end,
     _observe_buffer_unload = function(self)
