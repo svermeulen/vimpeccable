@@ -384,3 +384,22 @@ end)
 
 Note that vimpeccable will automatically fill in the `nargs` value for the command based on the given function signature.
 
+## Viewing Maps
+
+If you want to view all the maps that are managed by vimpeccable, you can call `vimp.show_maps`.  For example, you might add the following commands to your config:
+
+```lua
+-- Arguments: mode (optional)
+vimp.map_command("ShowAllMaps", function(...) 
+  -- Use empty string as prefix to select all
+  vimp.show_maps('', ...)
+end)
+
+-- Arguments: prefix (required), mode (optional)
+vimp.map_command("ShowMaps", function(...) 
+  vimp.show_maps(...)
+end)
+```
+
+Then, you can execute `:ShowAllMaps` to view the full list of maps, `:ShowAllMaps i` for all insert-mode maps, `:ShowMaps <space>` for all leader maps, `:ShowMaps <space> n` for leader mode normal-mode maps, etc.
+
