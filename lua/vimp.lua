@@ -450,6 +450,9 @@ do
         end
       end
     end,
+    noremap = function(self, ...)
+      return self:bind('nvo', ...)
+    end,
     tnoremap = function(self, ...)
       return self:bind('t', ...)
     end,
@@ -487,6 +490,9 @@ do
           self:_add_mapping(map)
         end
       end
+    end,
+    map = function(self, ...)
+      return self:rbind('nvo', ...)
     end,
     tmap = function(self, ...)
       return self:rbind('t', ...)

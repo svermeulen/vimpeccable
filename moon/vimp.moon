@@ -470,6 +470,9 @@ class Vimp
           mode, lhs, rhs, table_util.shallow_copy(options), table_util.shallow_copy(extra_options))
         @\_add_mapping(map)
 
+  noremap: (...) =>
+    @\bind('nvo', ...)
+
   tnoremap: (...) =>
     @\bind('t', ...)
 
@@ -505,6 +508,9 @@ class Vimp
         map = @\_create_map_info(
           mode, lhs, rhs, table_util.shallow_copy(options), table_util.shallow_copy(extra_options))
         @\_add_mapping(map)
+
+  map: (...) =>
+    @\rbind('nvo', ...)
 
   tmap: (...) =>
     @\rbind('t', ...)
