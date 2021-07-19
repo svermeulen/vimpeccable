@@ -129,7 +129,7 @@ class Vimp
     return @_always_override
 
   _set_always_override: (always_override) =>
-    sv.assert.that(type(always_override) == 'boolean')
+    assert.that(type(always_override) == 'boolean')
     @_always_override = always_override
 
   _observe_buffer_unload: =>
