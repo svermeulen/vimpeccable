@@ -123,6 +123,13 @@ do
       assert.that(strategy >= 1 and strategy <= 7, "Invalid map error handling strategy '" .. tostring(strategy) .. "'")
       self._map_error_handling_strategy = strategy
     end,
+    _get_always_override = function(self)
+      return self._always_override
+    end,
+    _set_always_override = function(self, always_override)
+      sv.assert.that(type(always_override) == 'boolean')
+      self._always_override = always_override
+    end,
     _observe_buffer_unload = function(self)
       vim.api.nvim_command([[augroup vimpBufWatch]])
       vim.api.nvim_command([[au!]])
@@ -344,7 +351,7 @@ do
       local mode_maps, trie = self:_get_mode_maps_and_trie(map)
       local existing_map = mode_maps[map.raw_lhs]
       if existing_map then
-        assert.that(map.extra_options.override, "Found duplicate mapping for keys '" .. tostring(map.lhs) .. "' in mode '" .. tostring(map.mode) .. "'.  Ignoring second attempt.\nCurrent Mapping: " .. tostring(existing_map:to_string()) .. "\nNew Mapping: " .. tostring(map:to_string()))
+        assert.that(map.extra_options.override or self._always_override, "Found duplicate mapping for keys '" .. tostring(map.lhs) .. "' in mode '" .. tostring(map.mode) .. "'.  Ignoring second attempt.\nCurrent Mapping: " .. tostring(existing_map:to_string()) .. "\nNew Mapping: " .. tostring(map:to_string()))
         self:_remove_mapping(existing_map)
       end
       local should_add_to_trie = not map.extra_options.chord
@@ -383,7 +390,7 @@ do
         assert.that(buffer_handle == nil, "Do not specify <buffer> option when inside a call to vimp.add_buffer_maps")
         buffer_handle = vim.api.nvim_get_current_buf()
       end
-      if not extra_options.override and buffer_handle == nil then
+      if (not extra_options.override and not self._always_override) and buffer_handle == nil then
         options.unique = true
       end
       if extra_options.repeatable then
@@ -629,6 +636,7 @@ do
       self._buffer_block_handle = nil
       self._file_log_stream = nil
       self._map_context_provider = nil
+      self._always_override = false
       for _index_0 = 1, #AllModes do
         local m = AllModes[_index_0]
         self._global_maps_by_mode_and_lhs[m] = { }

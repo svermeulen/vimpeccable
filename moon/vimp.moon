@@ -46,6 +46,7 @@ class Vimp
     @_buffer_block_handle = nil
     @_file_log_stream = nil
     @_map_context_provider = nil
+    @_always_override = false
 
     for m in *AllModes
       @_global_maps_by_mode_and_lhs[m] = {}
@@ -123,6 +124,13 @@ class Vimp
   _set_map_error_handling_strategy: (strategy) =>
     assert.that(strategy >= 1 and strategy <= 7, "Invalid map error handling strategy '#{strategy}'")
     @_map_error_handling_strategy = strategy
+
+  _get_always_override: =>
+    return @_always_override
+
+  _set_always_override: (always_override) =>
+    sv.assert.that(type(always_override) == 'boolean')
+    @_always_override = always_override
 
   _observe_buffer_unload: =>
     -- Note that we want to use BufUnload here and not BufDelete because BufDelete
@@ -341,7 +349,7 @@ class Vimp
     existing_map = mode_maps[map.raw_lhs]
 
     if existing_map
-      assert.that(map.extra_options.override,
+      assert.that(map.extra_options.override or @_always_override,
         "Found duplicate mapping for keys '#{map.lhs}' in mode '#{map.mode}'.  Ignoring second attempt.\nCurrent Mapping: #{existing_map\to_string!}\nNew Mapping: #{map\to_string!}")
 
       @\_remove_mapping(existing_map)
@@ -401,7 +409,7 @@ class Vimp
     -- Do not use <unique> for buffer maps because it's very common to override global maps with buffer ones
     -- When extra_options.override option is not provided, it will still make sure it doesn't collide with
     --  other buffer local ones
-    if not extra_options.override and buffer_handle == nil
+    if (not extra_options.override and not @_always_override) and buffer_handle == nil
       options.unique = true
 
     if extra_options.repeatable

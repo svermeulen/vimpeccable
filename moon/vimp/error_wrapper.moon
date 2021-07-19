@@ -36,11 +36,13 @@ return ->
     maps_in_progress: _vimp\_get_maps_in_progress,
     current_map_info: _vimp\_get_current_map_info,
     all_maps: _vimp\_get_all_maps,
+    always_override: _vimp\_get_always_override,
   }
   _setters = {
     map_error_handling_strategy: _vimp\_set_map_error_handling_strategy,
+    always_override: _vimp\_set_always_override,
     print_min_log_level: _vimp\_set_print_min_log_level,
-    map_context_provider: _vimp\_set_map_context_provider
+    map_context_provider: _vimp\_set_map_context_provider,
   }
 
   _getters_deprecated = {

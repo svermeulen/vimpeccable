@@ -91,12 +91,26 @@ return function()
       return function(...)
         return _fn_0(_base_0, ...)
       end
+    end)(),
+    always_override = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._get_always_override
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
     end)()
   }
   local _setters = {
     map_error_handling_strategy = (function()
       local _base_0 = _vimp
       local _fn_0 = _base_0._set_map_error_handling_strategy
+      return function(...)
+        return _fn_0(_base_0, ...)
+      end
+    end)(),
+    always_override = (function()
+      local _base_0 = _vimp
+      local _fn_0 = _base_0._set_always_override
       return function(...)
         return _fn_0(_base_0, ...)
       end

@@ -340,6 +340,16 @@ vimp.add_buffer_maps(bufferId, function()
   vimp.nnoremap('<leader>t2', function() print('lua map two!') end)
 end)
 ```
+## Advanced Options
+
+* `vimp.always_override` (default: `false`) 
+    * When true, all maps will be added as if they always have the `override` option set
+* `vimp.all_maps`
+    * A dictionary containing the full list of maps and their associated info
+* `vimp.current_map_info`
+    * A table of info for the currently executing map
+* `vimp.maps_in_progress`
+    * A collection of all maps that are currently executing
 
 ## User Command Maps
 
