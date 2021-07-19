@@ -5,6 +5,7 @@ local string_util = require("vimp.util.string")
 local bind_methods = {
   'bind',
   'rbind',
+  'noremap',
   'nnoremap',
   'inoremap',
   'xnoremap',
@@ -20,7 +21,8 @@ local bind_methods = {
   'omap',
   'smap',
   'cmap',
-  'tmap'
+  'tmap',
+  'map'
 }
 local get_extra_context
 get_extra_context = function(member, args)

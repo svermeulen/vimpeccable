@@ -5,9 +5,9 @@ table_util = require("vimp.util.table")
 string_util = require("vimp.util.string")
 
 bind_methods = {
-  'bind', 'rbind', 'nnoremap', 'inoremap', 'xnoremap',
+  'bind', 'rbind', 'noremap', 'nnoremap', 'inoremap', 'xnoremap',
   'vnoremap', 'onoremap', 'snoremap', 'cnoremap', 'tnoremap',
-  'nmap', 'imap', 'xmap', 'vmap', 'omap', 'smap', 'cmap', 'tmap'}
+  'nmap', 'imap', 'xmap', 'vmap', 'omap', 'smap', 'cmap', 'tmap', 'map'}
 
 get_extra_context = (member, args) ->
   if table_util.contains(bind_methods, member)
