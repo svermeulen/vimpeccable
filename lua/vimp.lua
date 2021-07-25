@@ -224,6 +224,20 @@ do
       end
       return modes, options_map, extra_options_map, lhs, rhs
     end,
+    _convert_command_args = function(self, arg1, arg2, arg3)
+      local options, name, handler
+      if arg3 ~= nil then
+        options = arg1
+        name = arg2
+        handler = arg3
+      else
+        options = { }
+        name = arg1
+        handler = arg2
+      end
+      assert.that(type(options) == 'table', "Expected to find an options table but instead found: " .. tostring(options))
+      return options, name, handler
+    end,
     _executeCommandMap = function(self, mapId, userArgs)
       local map = self._command_maps_by_id[mapId]
       assert.that(map ~= nil)
@@ -612,10 +626,11 @@ do
       log.warning("Field 'vimp.mapCommand' is deprecated.  Use vimp.map_command instead!")
       return self:map_command(...)
     end,
-    map_command = function(self, name, handler)
+    map_command = function(self, ...)
+      local options, name, handler = self:_convert_command_args(...)
       assert.that(self._buffer_block_handle == nil, "Buffer local commands are not currently supported")
       local id = self:_generate_new_mapping_id()
-      local map = CommandMapInfo(id, handler, name)
+      local map = CommandMapInfo(id, handler, name, options)
       assert.that(self._command_maps_by_id[map.id] == nil)
       map:add_to_vim()
       self._command_maps_by_id[map.id] = map

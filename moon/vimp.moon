@@ -214,6 +214,25 @@ class Vimp
 
     return modes, options_map, extra_options_map, lhs, rhs
 
+  -- 3 params = options, name, handler
+  -- 2 params = name, handler
+  _convert_command_args: (arg1, arg2, arg3) =>
+    local options, name, handler
+
+    if arg3 != nil
+      options = arg1
+      name = arg2
+      handler = arg3
+    else
+      options = {}
+      name = arg1
+      handler = arg2
+
+    assert.that(type(options) == 'table',
+      "Expected to find an options table but instead found: #{options}")
+
+    return options, name, handler
+
   _executeCommandMap: (mapId, userArgs) =>
     map = @_command_maps_by_id[mapId]
 
@@ -647,11 +666,13 @@ class Vimp
     log.warning("Field 'vimp.mapCommand' is deprecated.  Use vimp.map_command instead!")
     @\map_command(...)
 
-  map_command: (name, handler) =>
+  map_command: (...) =>
+    options, name, handler = @\_convert_command_args(...)
+
     assert.that(@_buffer_block_handle == nil, "Buffer local commands are not currently supported")
 
     id = @\_generate_new_mapping_id!
-    map = CommandMapInfo(id, handler, name)
+    map = CommandMapInfo(id, handler, name, options)
     assert.that(@_command_maps_by_id[map.id] == nil)
     map\add_to_vim!
     @_command_maps_by_id[map.id] = map
