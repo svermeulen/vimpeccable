@@ -56,11 +56,11 @@ When using Neovim 0.5 and Vimpeccable, you could instead write it in lua or any 
 ```lua
 vim.cmd 'packadd paq-nvim'
 
-local paq = require('paq-nvim').paq
-paq {'savq/paq-nvim', opt = true}
-
-paq {'morhetz/gruvbox'}
-paq {'svermeulen/vimpeccable'}
+require 'paq' {
+  {'savq/paq-nvim', opt = true};
+  'morhetz/gruvbox';
+  'svermeulen/vimpeccable'
+}
 
 vim.o.ignorecase = true
 vim.o.smartcase = true
