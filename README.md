@@ -384,6 +384,14 @@ end)
 
 Note that vimpeccable will automatically fill in the `nargs` value for the command based on the given function signature.
 
+For completion support, an option table can be passed, for example:
+
+```lua
+vimp.map_command({ complete = 'lua' }, 'Lua', function(lua_expr)
+  print(vim.inspect(lua_expr))
+end)
+```
+
 ## Viewing Maps
 
 If you want to view all the maps that are managed by vimpeccable, you can call `vimp.show_maps`.  For example, you might add the following commands to your config:

@@ -20,15 +20,24 @@ do
       end
       return '*'
     end,
+    _get_options_string = function(self)
+      local stringified_options = { }
+      if self.options.complete ~= nil then
+        assert.that(type(self.options.complete) == 'string', "Expected type 'string' for option 'complete' but instead found '" .. tostring(type(self.options.complete)) .. "'")
+        table.insert(stringified_options, "-complete=" .. tostring(self.options.complete))
+      end
+      return table.concat(stringified_options, ' ')
+    end,
     _create_command_str = function(self)
       local nargs = self:_get_n_args_from_handler()
+      local options_string = self:_get_options_string()
       if nargs == '0' then
-        return "command -nargs=0 " .. tostring(self.name) .. " lua _vimp:_executeCommandMap(" .. tostring(self.id) .. ", {})"
+        return "command -nargs=0 " .. tostring(options_string) .. " " .. tostring(self.name) .. " lua _vimp:_executeCommandMap(" .. tostring(self.id) .. ", {})"
       end
       if nargs == '1' then
-        return "command -nargs=1 " .. tostring(self.name) .. " call luaeval(\"_vimp:_executeCommandMap(" .. tostring(self.id) .. ", {_A})\", <q-args>)"
+        return "command -nargs=1 " .. tostring(options_string) .. " " .. tostring(self.name) .. " call luaeval(\"_vimp:_executeCommandMap(" .. tostring(self.id) .. ", {_A})\", <q-args>)"
       end
-      return "command -nargs=* " .. tostring(self.name) .. " call luaeval(\"_vimp:_executeCommandMap(" .. tostring(self.id) .. ", _A)\", [<f-args>])"
+      return "command -nargs=* " .. tostring(options_string) .. " " .. tostring(self.name) .. " call luaeval(\"_vimp:_executeCommandMap(" .. tostring(self.id) .. ", _A)\", [<f-args>])"
     end,
     add_to_vim = function(self)
       local command_str = self:_create_command_str()
@@ -37,10 +46,11 @@ do
   }
   _base_0.__index = _base_0
   _class_0 = setmetatable({
-    __init = function(self, id, handler, name)
+    __init = function(self, id, handler, name, options)
       self.id = id
       self.handler = handler
       self.name = name
+      self.options = options
     end,
     __base = _base_0,
     __name = "CommandMapInfo"
