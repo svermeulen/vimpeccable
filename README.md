@@ -7,6 +7,14 @@ Vimpeccable is a plugin for Neovim that adds a simple lua api to map keys direct
 
 NOTE: Requires Neovim 0.5+
 
+NOTE: As of Neovim 0.7, you can now pass functions into mappings directly by using this API:
+```lua
+vim.keymap.set("n", "<keys>", function() ... end);
+```
+noremap is set to true by default when using this API.
+
+
+
 ## Table of Contents
 
 * [Quick Start Example](#quick-start-example)
